@@ -21,7 +21,7 @@
     "dist": "gulp dist",
     "ad-staging-deploy": "AMP_TESTING_HOST=amp-ads-staging.firebaseapp.com npm run heroku-postbuild",
     "ad-prod-deploy": "AMP_TESTING_HOST=amp-ads.firebaseapp.com npm run heroku-postbuild",
-    "heroku-postbuild": "gulp clean && gulp build --fortesting && gulp dist --fortesting && npm run prepend-amp && npm run prepend-v0",
+    "heroku-postbuild": "gulp clean && gulp build --fortesting && npm run prepend-amp",
     "test-env-var": "if [ -z \"${AMP_TESTING_HOST}\" ]; then echo \"ERROR: Please set the 'AMP_TESTING_HOST' environment variable. If you are in heroku this can be set by executing 'heroku config:set AMP_TESTING_HOST=my-heroku-subdomain.herokuapp.com' on the command line.\"; exit 1; fi",
     "prepend-amp": "gulp prepend-global --prod node_modules/AMP_CONFIG.json --local --target dist/amp.js && gulp prepend-global --prod node_modules/AMP_CONFIG.json --local --target dist.3p/current/integration.js",
     "prepend-v0": "gulp prepend-global --prod node_modules/AMP_CONFIG.json --local --target dist/v0.js && gulp prepend-global --prod node_modules/AMP_CONFIG.json --local --target dist.3p/current-min/f.js"
