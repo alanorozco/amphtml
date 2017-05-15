@@ -62,6 +62,10 @@ export function isCanary(win) {
  * @return {boolean}
  */
 export function isExperimentOn(win, experimentId) {
+  //TODO(aghassemi): Hack for Ad demos
+  if (experimentId == 'amp-animation' || experimentId == 'amp-bind') {
+    return true;
+  }
   const toggles = experimentToggles(win);
   return !!toggles[experimentId];
 }

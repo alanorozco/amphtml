@@ -56,6 +56,8 @@ const developmentScriptQuery = 'script[src*="/dist/"],script[src*="/base/"]';
 export function getMode(opt_win) {
   const win = opt_win || self;
   if (win.AMP_MODE) {
+    //TODO(aghassemi): Hack for Ad demos
+    win.AMP_MODE.localDev = true;
     return win.AMP_MODE;
   }
   return win.AMP_MODE = getMode_(win);
