@@ -184,8 +184,8 @@ export class Bookend {
     /** @private {?Element} */
     this.replayBtn_ = null;
 
-    /** @private {!BookendShareWidget} */
-    this.shareWidget_ = BookendShareWidget.create(win);
+    /** @private {?BookendShareWidget} */
+    this.shareWidget_ = null;
   }
 
   /**
@@ -198,6 +198,8 @@ export class Bookend {
     }
 
     this.isBuilt_ = true;
+
+    this.shareWidget_ = BookendShareWidget.create(ampdoc);
 
     this.root_ = renderAsElement(this.win_.document, ROOT_TEMPLATE);
 
