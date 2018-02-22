@@ -212,6 +212,7 @@ amp-story-page {
   right: 0 !important;
   top: 0 !important;
   transition: none !important;
+  -webkit-tap-highlight-color: rgba(0, 0, 0, 0) !important;
 }
 
 amp-story-page.i-amphtml-layout-container {
