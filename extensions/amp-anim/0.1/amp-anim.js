@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 
+import * as st from '../../../src/style';
+import {dev} from '../../../src/log';
 import {isLayoutSizeDefined} from '../../../src/layout';
 import {srcsetFromElement} from '../../../src/srcset';
-import {dev} from '../../../src/log';
-import * as st from '../../../src/style';
 
 const TAG = 'amp-anim';
 
@@ -46,7 +46,7 @@ export class AmpAnim extends AMP.BaseElement {
   /** @override */
   buildCallback() {
     this.img_ = new Image();
-    this.img_.setAttribute('async', '');
+    this.img_.setAttribute('decoding', 'async');
     this.propagateAttributes(['alt', 'aria-label',
       'aria-describedby', 'aria-labelledby'], this.img_);
     this.applyFillContent(this.img_, true);
