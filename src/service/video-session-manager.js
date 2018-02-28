@@ -29,9 +29,10 @@ export class VideoSessionManager {
   /**
    * Register a listener to be notified when a session has ended
    * @param {!Function} listener
+   * @return {!UnlistenDef}
    */
   onSessionEnd(listener) {
-    this.endSessionObservable_.add(listener);
+    return this.endSessionObservable_.add(listener);
   }
 
   /**

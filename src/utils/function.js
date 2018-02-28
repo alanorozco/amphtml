@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import {toArray} from '../types';
 
 
 /**
@@ -26,11 +27,12 @@
 export function once(fn) {
   let evaluated = false;
   let retValue = null;
-  return () => {
+  return function(...args) {
     if (!evaluated) {
-      retValue = fn();
+      retValue = fn.apply(null, args);
       evaluated = true;
       fn = null; // GC
+      args = null; // GC
     }
     return retValue;
   };

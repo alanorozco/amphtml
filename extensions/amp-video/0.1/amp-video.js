@@ -212,8 +212,9 @@ class AmpVideo extends AMP.BaseElement {
     // amp-story coordinates playback based on page activation, as opposed to
     // visibility.
     // TODO(alanorozco, #12712): amp-story should coordinate resumeCallback.
-    Services.videoManagerForDoc(this.element).register(this,
-        /* manageAutoplay */ !this.isStoryVideo_);
+    // TODO(alanorozco, #13674): Use opt-out at amp-story level once
+    // VideoManagerV2 is default.
+    this.manager_().register(this, /* manageAutoplay */ !this.isStoryVideo_);
   }
 
   /** @override */
@@ -263,6 +264,7 @@ class AmpVideo extends AMP.BaseElement {
     this.element.dispatchCustomEvent(VideoEvents.VISIBILITY, {visible});
   }
 
+
   /** @override */
   layoutCallback() {
     this.video_ = dev().assertElement(this.video_);
@@ -298,6 +300,16 @@ class AmpVideo extends AMP.BaseElement {
     return this.loadPromise(this.video_).then(() => {
       this.element.dispatchCustomEvent(VideoEvents.LOAD);
     });
+  }
+
+  /** @override */
+  unlayoutCallback() {
+    this.manager_().unregister(this);
+  }
+
+  /** @private */
+  manager_() {
+    return Services.videoManagerForDoc(this.element);
   }
 
   /**

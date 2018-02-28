@@ -50,6 +50,7 @@ import {Services} from '../../../src/services';
 import {ShareWidget} from './share';
 import {SystemLayer} from './system-layer';
 import {TapNavigationDirection} from './page-advancement';
+import {VideoBehaviorId} from '../../../src/service/video-manager-behavior';
 import {
   closest,
   escapeCssSelectorIdent,
@@ -69,6 +70,9 @@ import {dict} from '../../../src/utils/object';
 import {findIndex} from '../../../src/utils/array';
 import {getMode} from '../../../src/mode';
 import {getSourceOrigin, parseUrl} from '../../../src/url';
+import {
+  installVideoManagerForDoc,
+} from '../../../src/service/video-manager-impl';
 import {isExperimentOn, toggleExperiment} from '../../../src/experiments';
 import {once} from '../../../src/utils/function';
 import {registerServiceBuilder} from '../../../src/service';
@@ -213,6 +217,13 @@ const HIDE_ON_BOOKEND_SELECTOR =
 
 
 /**
+ * Selector for valid <amp-story> descendants that implement `VideoInterface`.
+ * @private @const {string}
+ */
+const VIDEO_INTERFACE_ELEMENTS = 'amp-video';
+
+
+/**
  * @implements {./media-pool.MediaPoolRoot}
  */
 export class AmpStory extends AMP.BaseElement {
@@ -309,6 +320,8 @@ export class AmpStory extends AMP.BaseElement {
 
     this.initializeListeners_();
     this.initializeListenersForDev_();
+
+    this.maybeDisableVideoBehaviors_();
 
     this.navigationState_.observe(stateChangeEvent =>
       (new AmpStoryAnalytics(this.element)).onStateChange(stateChangeEvent));
@@ -609,6 +622,30 @@ export class AmpStory extends AMP.BaseElement {
     this.mutateElement(() => {
       this.element.classList.add(STORY_LOADED_CLASS_NAME);
     });
+  }
+
+  /** @private */
+  maybeDisableVideoBehaviors_() {
+    const {element} = this;
+    const elements =
+        toArray(scopedQuerySelectorAll(element, VIDEO_INTERFACE_ELEMENTS));
+    if (elements.length < 1) {
+      return;
+    }
+    installVideoManagerForDoc(element);
+    this.disableVideoBehaviors_(elements);
+  }
+
+  /**
+   * @param {!Array<!AmpElement>} elements
+   * @private
+   */
+  disableVideoBehaviors_(elements) {
+    // amp-story coordinates playback based on page activation, as opposed to
+    // visibility.
+    const mask = ~VideoBehaviorId.AUTOPLAY;
+    const videoManager = Services.videoManagerForDoc(element);
+    elements.forEach(el => videoManager.remaskBehaviors(el, mask));
   }
 
 
