@@ -21,6 +21,8 @@ import {px, setImportantStyles} from '../../../src/style';
 import {throttle} from '../../../src/utils/rate-limit';
 import {toArray, toWin} from '../../../src/types';
 import {unscaledClientRect} from './utils';
+import {dict} from '../../../src/utils/object';
+import {once} from '../../../src/utils/function';
 
 
 /** @private @const {number} */
@@ -50,6 +52,39 @@ let TargetDimensionsDef;
 let ScalableDimensionsDef;
 
 
+const RANGES = dict({
+  'scaling-h': [400, 480],
+  'scaling-g': [400, 500],
+  'scaling-f': [400, 520],
+  'scaling-e': [400, 540],
+  'scaling-d': [380, 460],
+  'scaling-c': [380, 480],
+  'scaling-b': [380, 500],
+  'scaling-a': [380, 520],
+});
+
+
+const getRange = once(() => {
+  const exp = Object.keys(RANGES).find(exp => isExperimentOn(window, exp));
+  if (exp) {
+    return RANGES[exp];
+  }
+  return [MIN_LAYER_WIDTH_PX, MAX_LAYER_WIDTH_PX];
+});
+
+
+function getMaxLayerWidth() {
+  const range = getRange();
+  return range[1];
+}
+
+
+function getMinLayerWidth() {
+  const range = getRange();
+  return range[0];
+}
+
+
 /**
  * @param {!Element} sizer
  * @return {!TargetDimensionsDef}
@@ -59,8 +94,8 @@ function targetDimensionsFor(sizer) {
 
   const ratio = width / height;
 
-  const targetWidth = Math.min(MAX_LAYER_WIDTH_PX,
-      Math.max(width, Math.max(1, ratio) * MIN_LAYER_WIDTH_PX));
+  const targetWidth = Math.min(getMaxLayerWidth(),
+      Math.max(width, Math.max(1, ratio) * getMinLayerWidth()));
 
   const targetHeight = (targetWidth / ratio);
 
@@ -111,10 +146,8 @@ function isScalingEnabled(page) {
   // NOTE(alanorozco): Experiment flag is temporary. No need to clutter the
   // signatures in this function path by adding `win` as a parameter.
   const win = toWin(page.ownerDocument.defaultView);
-  if (isExperimentOn(win, 'amp-story-scaling')) {
-    return true;
-  }
-  return page.getAttribute('scaling') == 'relative';
+  const exp = Object.keys(RANGES).find(exp => isExperimentOn(win, exp));
+  return !!exp || page.getAttribute('scaling') == 'relative';
 }
 
 
