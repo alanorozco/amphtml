@@ -16,12 +16,14 @@
 
 import {ActionTrust} from './action-trust';
 import {Layout} from './layout';
-import {getData} from './event-helper';
+import {Services} from './services';
+import {dev, user} from './log';
+import {getData, listen} from './event-helper';
+import {getMode} from './mode';
+import {isArray, toWin} from './types';
+import {isExperimentOn} from './experiments';
 import {loadPromise} from './event-helper';
 import {preconnectForElement} from './preconnect';
-import {isArray, toWin} from './types';
-import {Services} from './services';
-import {user} from './log';
 
 /**
  * Base class for all custom element implementations. Instead of inheriting
@@ -177,12 +179,16 @@ export class BaseElement {
   }
 
   /**
-  * This is the priority of loading elements (layoutCallback).
+  * This is the priority of loading elements (layoutCallback). Used only to
+  * determine layout timing and preloading priority. Does not affect build time,
+  * etc.
+  *
   * The lower the number, the higher the priority.
+  *
   * The default priority for base elements is 0.
   * @return {number}
   */
-  getPriority() {
+  getLayoutPriority() {
     return 0;
   }
 
@@ -194,11 +200,12 @@ export class BaseElement {
    * available. It's a restricted API and special review is required to
    * allow individual extensions to request priority upgrade.
    *
-   * @param {number} newPriority
+   * @param {number} newLayoutPriority
    * @restricted
    */
-  updatePriority(newPriority) {
-    this.element.getResources().updatePriority(this.element, newPriority);
+  updateLayoutPriority(newLayoutPriority) {
+    this.element.getResources().updateLayoutPriority(
+        this.element, newLayoutPriority);
   }
 
   /** @return {!Layout} */
@@ -399,7 +406,9 @@ export class BaseElement {
    * @return {boolean|number}
    */
   renderOutsideViewport() {
-    return 3;
+    // Inabox allow layout independent of viewport location.
+    return getMode(this.win).runtime == 'inabox' &&
+        isExperimentOn(this.win, 'inabox-rov') ? true : 3;
   }
 
   /**
@@ -637,14 +646,15 @@ export class BaseElement {
    * @param  {string|!Array<string>} events
    * @param  {!Element} element
    * @public @final
+   * @return {!UnlistenDef}
    */
   forwardEvents(events, element) {
-    events = isArray(events) ? events : [events];
-    for (let i = 0; i < events.length; i++) {
-      element.addEventListener(events[i], event => {
-        this.element.dispatchCustomEvent(events[i], getData(event) || {});
-      });
-    }
+    const unlisteners = (isArray(events) ? events : [events]).map(eventType =>
+      listen(element, eventType, event => {
+        this.element.dispatchCustomEvent(eventType, getData(event) || {});
+      }));
+
+    return () => unlisteners.forEach(unlisten => unlisten());
   }
 
   /**
@@ -875,7 +885,7 @@ export class BaseElement {
         this.element, newHeight, /* newWidth */ undefined);
   }
 
- /**
+  /**
   * Return a promise that requests the runtime to update
   * the size of this element to the specified value.
   * The runtime will schedule this request and attempt to process it
@@ -895,7 +905,7 @@ export class BaseElement {
         this.element, newHeight, newWidth);
   }
 
- /**
+  /**
   * Runs the specified mutation on the element and ensures that measures
   * and layouts performed for the affected elements.
   *
@@ -912,15 +922,6 @@ export class BaseElement {
   mutateElement(mutator, opt_element) {
     return this.element.getResources().mutateElement(
         opt_element || this.element, mutator);
-  }
-
-  /**
-   * Schedules callback to be complete within the next batch. This call is
-   * intended for heavy DOM mutations that typically cause re-layouts.
-   * @param {!Function} callback
-   */
-  deferMutate(callback) {
-    this.element.getResources().deferMutate(this.element, callback);
   }
 
   /**
@@ -974,5 +975,18 @@ export class BaseElement {
 
   user() {
     return user(this.element);
+  }
+
+  /**
+   * Declares a child element (or ourselves) as a Layer
+   * @param {!Element=} opt_element
+   */
+  declareLayer(opt_element) {
+    dev().assert(isExperimentOn(this.win, 'layers'), 'Layers must be enabled' +
+        ' to declare layer.');
+    if (opt_element) {
+      dev().assert(this.element.contains(opt_element));
+    }
+    return this.element.getLayers().declareLayer(opt_element || this.element);
   }
 }

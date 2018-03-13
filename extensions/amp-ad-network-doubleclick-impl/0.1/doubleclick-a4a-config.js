@@ -20,21 +20,22 @@
 // Most other ad networks will want to put their A4A code entirely in the
 // extensions/amp-ad-network-${NETWORK_NAME}-impl directory.
 import {
+  ExperimentInfo, // eslint-disable-line no-unused-vars
+  forceExperimentBranch,
+  getExperimentBranch,
+  randomlySelectUnsetExperiments,
+} from '../../../src/experiments';
+import {
   MANUAL_EXPERIMENT_ID,
-  extractUrlExperimentId,
   addExperimentIdToElement,
+  extractUrlExperimentId,
 } from '../../../ads/google/a4a/traffic-experiments';
+import {dev, user} from '../../../src/log';
+import {getMode} from '../../../src/mode';
 import {
   isCdnProxy,
 } from '../../../ads/google/a4a/utils';
-import {
-  /* eslint no-unused-vars: 0 */ ExperimentInfo,
-  getExperimentBranch,
-  forceExperimentBranch,
-  randomlySelectUnsetExperiments,
-} from '../../../src/experiments';
-import {getMode} from '../../../src/mode';
-import {dev, user} from '../../../src/log';
+import {tryParseJson} from '../../../src/json';
 
 /** @const {string} */
 export const DOUBLECLICK_A4A_EXPERIMENT_NAME = 'expDoubleclickA4A';
@@ -54,6 +55,10 @@ export const DOUBLECLICK_EXPERIMENT_FEATURE = {
   CANONICAL_EXPERIMENT: '21060933',
   CACHE_EXTENSION_INJECTION_CONTROL: '21060955',
   CACHE_EXTENSION_INJECTION_EXP: '21060956',
+  REMOTE_HTML_CONTROL: '21061728',
+  REMOTE_HTML_EXPERIMENT: '21061729',
+  USDRUD_CONTROL: '21061759',
+  USDRUD_EXPERIMENT: '21061760',
 };
 
 /** @const @enum{string} */
@@ -72,6 +77,10 @@ export const URL_EXPERIMENT_MAPPING = {
   // SRA
   '7': DOUBLECLICK_EXPERIMENT_FEATURE.SRA_CONTROL,
   '8': DOUBLECLICK_EXPERIMENT_FEATURE.SRA,
+  '9': DOUBLECLICK_EXPERIMENT_FEATURE.REMOTE_HTML_CONTROL,
+  '10': DOUBLECLICK_EXPERIMENT_FEATURE.REMOTE_HTML_EXPERIMENT,
+  '11': DOUBLECLICK_EXPERIMENT_FEATURE.USDRUD_CONTROL,
+  '12': DOUBLECLICK_EXPERIMENT_FEATURE.USDRUD_EXPERIMENT,
 };
 
 /**
@@ -107,7 +116,7 @@ export class DoubleclickA4aEligibility {
    * @param {!Window} win
    * @param {!Element} element
    * @param {!Array<string>} branches
-   * @param {!string} expName
+   * @param {string} expName
    */
   selectAndSetUnconditionedExp(win, element, branches, expName) {
     const experimentId = this.maybeSelectExperiment(
@@ -121,7 +130,7 @@ export class DoubleclickA4aEligibility {
   /** Whether Fast Fetch is enabled
    * @param {!Window} win
    * @param {!Element} element
-   * @param {!boolean} useRemoteHtml
+   * @param {boolean} useRemoteHtml
    * @return {boolean}
    */
   isA4aEnabled(win, element, useRemoteHtml) {
@@ -132,18 +141,28 @@ export class DoubleclickA4aEligibility {
           'https://github.com/ampproject/amphtml/issues/11834 ' +
           'for more information');
     const usdrd = 'useSameDomainRenderingUntilDeprecated';
-    const hasUSDRD = usdrd in element.dataset || element.hasAttribute(usdrd);
+    const hasUSDRD = usdrd in element.dataset ||
+          (tryParseJson(element.getAttribute('json')) || {})[usdrd];
     if (hasUSDRD) {
       warnDeprecation(usdrd);
     }
     if (useRemoteHtml) {
       warnDeprecation('remote.html');
     }
-    if (hasUSDRD || (useRemoteHtml && !element.getAttribute('rtc-config'))) {
+    let experimentId;
+    const urlExperimentId = extractUrlExperimentId(win, element) || '';
+    if (hasUSDRD &&
+        ![DOUBLECLICK_EXPERIMENT_FEATURE.USDRUD_EXPERIMENT,
+          DOUBLECLICK_EXPERIMENT_FEATURE.USDRUD_CONTROL].includes(
+            URL_EXPERIMENT_MAPPING[urlExperimentId])) {
       return false;
     }
-    let experimentId;
-    const urlExperimentId = extractUrlExperimentId(win, element);
+    if (useRemoteHtml && !element.getAttribute('rtc-config') &&
+        ![DOUBLECLICK_EXPERIMENT_FEATURE.REMOTE_HTML_EXPERIMENT,
+          DOUBLECLICK_EXPERIMENT_FEATURE.REMOTE_HTML_CONTROL].includes(
+            URL_EXPERIMENT_MAPPING[urlExperimentId])) {
+      return false;
+    }
     if (!this.isCdnProxy(win)) {
       // Ensure that forcing FF via url is applied if test/localDev.
       if (urlExperimentId == -1 &&
@@ -174,14 +193,16 @@ export class DoubleclickA4aEligibility {
       addExperimentIdToElement(experimentId, element);
       forceExperimentBranch(win, DOUBLECLICK_A4A_EXPERIMENT_NAME, experimentId);
     }
-    return true;
+    return ![DOUBLECLICK_EXPERIMENT_FEATURE.REMOTE_HTML_CONTROL,
+      DOUBLECLICK_EXPERIMENT_FEATURE.USDRUD_CONTROL].includes(
+        experimentId);
   }
 
   /**
    * @param {!Window} win
    * @param {!Element} element
    * @param {!Array<string>} selectionBranches
-   * @param {!string} experimentName}
+   * @param {string} experimentName}
    * @return {?string} Experiment branch ID or null if not selected.
    * @visibileForTesting
    */
@@ -203,7 +224,7 @@ const singleton = new DoubleclickA4aEligibility();
 /**
  * @param {!Window} win
  * @param {!Element} element
- * @param {!boolean} useRemoteHtml
+ * @param {boolean} useRemoteHtml
  * @returns {boolean}
  */
 export function doubleclickIsA4AEnabled(win, element, useRemoteHtml) {
