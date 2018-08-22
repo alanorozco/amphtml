@@ -14,6 +14,9 @@
  * limitations under the License.
  */
 
+import {IFRAME_TRANSPORTS} from './iframe-transport-vendors';
+import {hasOwn} from '../../../src/utils/object';
+
 /**
  * @const {!JsonObject}
  */
@@ -24,13 +27,16 @@ export const ANALYTICS_CONFIG = /** @type {!JsonObject} */ ({
     'transport': {'beacon': true, 'xhrpost': true, 'image': true},
     'vars': {
       'accessReaderId': 'ACCESS_READER_ID',
-      'adNavTiming': 'AD_NAV_TIMING',  // only available in A4A embeds
-      'adNavType': 'AD_NAV_TYPE',  // only available in A4A embeds
-      'adRedirectCount': 'AD_NAV_REDIRECT_COUNT',  // only available in A4A
+      'adNavTiming': 'AD_NAV_TIMING', // only available in A4A embeds
+      'adNavType': 'AD_NAV_TYPE', // only available in A4A embeds
+      'adRedirectCount': 'AD_NAV_REDIRECT_COUNT', // only available in A4A
       'ampdocHost': 'AMPDOC_HOST',
       'ampdocHostname': 'AMPDOC_HOSTNAME',
       'ampdocUrl': 'AMPDOC_URL',
+      'ampGeo': 'AMP_GEO',
+      'ampState': 'AMP_STATE',
       'ampVersion': 'AMP_VERSION',
+      'ancestorOrigin': 'ANCESTOR_ORIGIN',
       'authdata': 'AUTHDATA',
       'availableScreenHeight': 'AVAILABLE_SCREEN_HEIGHT',
       'availableScreenWidth': 'AVAILABLE_SCREEN_WIDTH',
@@ -48,6 +54,12 @@ export const ANALYTICS_CONFIG = /** @type {!JsonObject} */ ({
       'domainLookupTime': 'DOMAIN_LOOKUP_TIME',
       'domInteractiveTime': 'DOM_INTERACTIVE_TIME',
       'externalReferrer': 'EXTERNAL_REFERRER',
+      'firstContentfulPaint': 'FIRST_CONTENTFUL_PAINT',
+      'firstViewportReady': 'FIRST_VIEWPORT_READY',
+      'fragmentParam': 'FRAGMENT_PARAM',
+      'makeBodyVisible': 'MAKE_BODY_VISIBLE',
+      'htmlAttr': 'HTML_ATTR',
+      'incrementalEngagedTime': 'INCREMENTAL_ENGAGED_TIME',
       'navRedirectCount': 'NAV_REDIRECT_COUNT',
       'navTiming': 'NAV_TIMING',
       'navType': 'NAV_TYPE',
@@ -72,6 +84,7 @@ export const ANALYTICS_CONFIG = /** @type {!JsonObject} */ ({
       'tcpConnectTime': 'TCP_CONNECT_TIME',
       'timestamp': 'TIMESTAMP',
       'timezone': 'TIMEZONE',
+      'timezoneCode': 'TIMEZONE_CODE',
       'title': 'TITLE',
       'totalEngagedTime': 'TOTAL_ENGAGED_TIME',
       'userAgent': 'USER_AGENT',
@@ -188,6 +201,40 @@ export const ANALYTICS_CONFIG = /** @type {!JsonObject} */ ({
     },
   },
 
+  'umenganalytics': {
+    'vars': {
+      'siteid': '',
+      'initial_view_time': '',
+      'eventName': '',
+      'eventProps': '',
+    },
+    'requests': {
+      'base': 'https://b.cnzz.com/utrack?' +
+      '&_siteid=${siteid}' +
+      '&_distinct_id=${clientId(umeng_amp_id)}' +
+      '&_t=${timestamp}' +
+      '&_s=google' +
+      '&_b=web' +
+      '&_r=${externalReferrer}' +
+      '&_h=${screenHeight}' +
+      '&_w=${screenWidth}' +
+      '&_ivt=${initial_view_time}',
+      'pageview': '${base}&_ename=$w_page_view&_eprops=${eventProps}',
+      'event': '${base}&_ename=${eventName}&_eprops=${eventProps}',
+    },
+    'triggers': {
+      'defaultPageview': {
+        'on': 'visible',
+        'request': 'pageview',
+      },
+    },
+    'transport': {
+      'beacon': false,
+      'xhrpost': false,
+      'image': true,
+    },
+  },
+
   'baiduanalytics': {
     'requests': {
       'host': 'https://hm.baidu.com',
@@ -201,12 +248,6 @@ export const ANALYTICS_CONFIG = /** @type {!JsonObject} */ ({
       'beacon': false,
       'xhrpost': false,
       'image': true,
-    },
-  },
-
-  'bg': {
-    'transport': {
-      'iframe': 'https://tpc.googlesyndication.com/b4a/b4a-runner.html',
     },
   },
 
@@ -255,6 +296,55 @@ export const ANALYTICS_CONFIG = /** @type {!JsonObject} */ ({
           'maxTimerLength': 1200,
         },
         'request': 'pageping',
+      },
+    },
+    'transport': {
+      'beacon': false,
+      'xhrpost': false,
+      'image': true,
+    },
+  },
+
+  'byside': {
+    'vars': {
+	  'webcareZone': 'webcare',
+      'webcareId': '',
+      'channel': '',
+      'fid': '',
+	  'lang': 'pt',
+    },
+    'requests': {
+      'host': '//${webcareZone}.byside.com/',
+      'base': '${host}BWA${webcareId}/amp/',
+      'pageview': '${base}pixel.php',
+	  'event': '${base}signal.php?event_id=${eventId}' +
+	    '&event_label=${eventLabel}&fields=${fields}',
+    },
+    'extraUrlParams': {
+      'webcare_id': '${webcareId}',
+      'bwch': '${channel}',
+      'lang': '${lang}',
+      'fid': '${fid}',
+      'bwit': 'A',
+      'tuid': '${clientId(byside_webcare_tuid)}',
+      'suid': '',
+      'puid': '${pageViewId}p${timestamp}',
+      'referrer': '${documentReferrer}',
+      'page': '${sourceUrl}',
+      'amppage': '${ampdocUrl}',
+      'bwpt': '${title}',
+      'bres': '${viewportWidth}x${viewportHeight}',
+      'res': '${screenWidth}x${screenHeight}',
+      'v': 'v20171116a',
+      'ampv': '${ampVersion}',
+      'viewer': '${viewer}',
+      'ua': '${userAgent}',
+      'r': '${random}',
+    },
+    'triggers': {
+      'pageview': {
+        'on': 'visible',
+        'request': 'pageview',
       },
     },
     'transport': {
@@ -527,15 +617,17 @@ export const ANALYTICS_CONFIG = /** @type {!JsonObject} */ ({
         'euid-amp=${clientId(etuix)}&' +
         'url=${documentLocation}&',
       'pageview': '${base}/col2/${basePrefix}' +
-        'rf=${documentReferrer}&' +
-        'sd=${screenWidth}x${screenHeight}&' +
-        'sd=${screenColorDepth}&' +
-        'elg=${browserLanguage}',
+        'rf=${externalReferrer}&' +
+        'urlp=${pagePath}&' +
+        'ss=${screenWidth}x${screenHeight}&' +
+        'sd=${screenColorDepth}',
       'action': '${base}/action/${basePrefix}' +
         'eact=${actionCode}&' +
         'actr=${actionRef}',
       'user': '${base}/uparam/${basePrefix}' +
         'euk${userParamKey}=${userParamVal}',
+      'contextflag': '${base}/cflag2/${basePrefix}' +
+        'ecf0k=${cflagKey}&ecf0v=${cflagVal}',
     },
     'transport': {
       'beacon': false,
@@ -646,13 +738,13 @@ export const ANALYTICS_CONFIG = /** @type {!JsonObject} */ ({
     },
   },
 
-  'googleadwords': {
+  'googleadwords': { // https://developers.google.com/adwords/amp/landing-pages
     'requests': {
       'conversion_prefix': 'https://www.googleadservices.com/pagead/conversion/',
       'remarketing_prefix':
           'https://googleads.g.doubleclick.net/pagead/viewthroughconversion/',
       'common_params': '${googleConversionId}/?' +
-          'cv=amp2&' +  // Increment when making changes.
+          'cv=amp2&' + // Increment when making changes.
           'label=${googleConversionLabel}&' +
           'random=${random}&' +
           'url=${sourceUrl}&' +
@@ -681,8 +773,105 @@ export const ANALYTICS_CONFIG = /** @type {!JsonObject} */ ({
     },
   },
 
-  // Important: please keep this in sync with the following config
-  // 'googleanalytics-alpha'.
+  'gtag': {
+    'configRewriter': {
+      'url': 'https://www.googletagmanager.com/gtag/amp',
+    },
+    'vars': {
+      'eventValue': '0',
+      'documentLocation': 'SOURCE_URL',
+      'clientId': 'CLIENT_ID(AMP_ECID_GOOGLE,,_ga)',
+      'dataSource': 'AMP',
+      'anonymizeIP': 'aip',
+      'errorParam': '${errorName}-${errorMessage}',
+    },
+    'requests': {
+      'uaHost': 'https://www.google-analytics.com',
+      'uaBasePrefix':
+          'v=1&' +
+           '_v=a1&' +
+           'ds=${dataSource}&' +
+           '${anonymizeIP}&' +
+           '_s=${requestCount}&' +
+           'dt=${title}&' +
+           'sr=${screenWidth}x${screenHeight}&' +
+           'cid=${clientId}&' +
+           'tid=${trackingId}&' +
+           'dl=${documentLocation}&' +
+           'dr=${externalReferrer}&' +
+           'sd=${screenColorDepth}&' +
+           'ul=${browserLanguage}&' +
+           'de=${documentCharset}',
+      'uaBaseSuffix':
+          '&a=${pageViewId}&' +
+           'z=${random}',
+      'uaPageviewCommon':
+           '&t=pageview&' +
+           'jid=${random}&' +
+           'gjid=${random}&' +
+           '_r=1',
+      'uaPageview':
+          '${uaHost}/r/collect?${uaBasePrefix}' +
+           '${uaPageviewCommon}' +
+           '${uaBaseSuffix}',
+      'uaPageviewNpa':
+          '${uaHost}/collect?${uaBasePrefix}' +
+           '${uaPageviewCommon}' +
+           '${uaBaseSuffix}',
+      'uaEvent':
+          '${uaHost}/collect?${uaBasePrefix}&' +
+           't=event&' +
+           'jid=' +
+           '${uaBaseSuffix}',
+      'uaTiming':
+          '${uaHost}/collect?${uaBasePrefix}&' +
+           'jid=&' +
+           'plt=${pageLoadTime}&' +
+           'dns=${domainLookupTime}&' +
+           'tcp=${tcpConnectTime}&' +
+           'rrt=${redirectTime}&' +
+           'srt=${serverResponseTime}&' +
+           'pdt=${pageDownloadTime}&' +
+           'clt=${contentLoadTime}&' +
+           'dit=${domInteractiveTime}' +
+           '${uaBaseSuffix}',
+      'uaError':
+          '${uaHost}/collect?${uaBasePrefix}&' +
+           't=exception&' +
+           'exd=${errorParam}' +
+           '${uaBaseSuffix}',
+      'awConversionPrefix':
+          'https://www.googleadservices.com/pagead/conversion/',
+      'awRemarketingPrefix':
+          'https://googleads.g.doubleclick.net/pagead/viewthroughconversion/',
+      'awCommonParams':
+          '${conversionId}/?' +
+           'cv=amp3&' + // Increment when making changes.
+           'label=${conversionLabel}&' +
+           'random=${random}&' +
+           'url=${sourceUrl}&' +
+           'ref=${documentReferrer}&' +
+           'fst=${pageViewId}&' +
+           'num=${counter(googleadwords)}&' +
+           'fmt=3&' +
+           'async=1&' +
+           'u_h=${screenHeight}&u_w=${screenWidth}&' +
+           'u_ah=${availableScreenHeight}&u_aw=${availableScreenWidth}&' +
+           'u_cd=${screenColorDepth}&' +
+           'u_tz=${timezone}&' +
+           'tiba=${title}&' +
+           'guid=ON&script=0',
+      'awConversion': '${awConversionPrefix}${awCommonParams}',
+      'awRemarketing': '${awRemarketingPrefix}${awCommonParams}',
+      'flBase': 'https://ad.doubleclick.net/activity;src=${flSrc};type=${flType};cat=${flCat}',
+    },
+    'transport': {
+      'beacon': false,
+      'xhrpost': false,
+      'image': true,
+    },
+  },
+
   'googleanalytics': {
     'vars': {
       'eventValue': '0',
@@ -776,140 +965,6 @@ export const ANALYTICS_CONFIG = /** @type {!JsonObject} */ ({
     'optout': '_gaUserPrefs.ioo',
   },
 
-  // USE WITH CAUTION (unless told by Google Analytics representatives)
-  // googleanalytics-alpha configuration is not planned to be supported
-  // long-term. Avoid use of this value for amp-analytics config attribute
-  // unless you plan to migrate before deprecation' #5761
-  'googleanalytics-alpha': {
-    'vars': {
-      'eventValue': '0',
-      'documentLocation': 'SOURCE_URL',
-      'clientId': 'CLIENT_ID(AMP_ECID_GOOGLE,,_ga)',
-      'dataSource': 'AMP',
-      'anonymizeIP': 'aip',
-      'errorParam': '${errorName}-${errorMessage}',
-    },
-    'requests': {
-      'host': 'https://www.google-analytics.com',
-      'basePrefix': 'v=1&' +
-          '_v=a1&' +
-          'ds=${dataSource}&' +
-          '${anonymizeIP}&' +
-          '_s=${requestCount}&' +
-          'dt=${title}&' +
-          'sr=${screenWidth}x${screenHeight}&' +
-          '_utmht=${timestamp}&' +
-          'cid=${clientId}&' +
-          'tid=${account}&' +
-          'dl=${documentLocation}&' +
-          'dr=${externalReferrer}&' +
-          'sd=${screenColorDepth}&' +
-          'ul=${browserLanguage}&' +
-          'de=${documentCharset}',
-      'baseSuffix': '&a=${pageViewId}&' +
-          'z=${random}',
-      'pageview': '${host}/r/collect?${basePrefix}&' +
-          't=pageview&' +
-          'jid=${random}&' +
-          '_r=1' +
-          '${baseSuffix}',
-      'event': '${host}/collect?${basePrefix}&' +
-          't=event&' +
-          'jid=&' +
-          'ec=${eventCategory}&' +
-          'ea=${eventAction}&' +
-          'el=${eventLabel}&' +
-          'ev=${eventValue}' +
-          '${baseSuffix}',
-      'social': '${host}/collect?${basePrefix}&' +
-          't=social&' +
-          'jid=&' +
-          'sa=${socialAction}&' +
-          'sn=${socialNetwork}&' +
-          'st=${socialTarget}' +
-          '${baseSuffix}',
-      'timing': '${host}/collect?${basePrefix}&' +
-          't=${timingRequestType}&' +
-          'jid=&' +
-          'plt=${pageLoadTime}&' +
-          'dns=${domainLookupTime}&' +
-          'tcp=${tcpConnectTime}&' +
-          'rrt=${redirectTime}&' +
-          'srt=${serverResponseTime}&' +
-          'pdt=${pageDownloadTime}&' +
-          'clt=${contentLoadTime}&' +
-          'dit=${domInteractiveTime}' +
-          '${baseSuffix}',
-      'error': '${host}/collect?${basePrefix}&' +
-          't=exception&' +
-          'exd=${errorParam}' +
-          '${baseSuffix}',
-    },
-    'triggers': {
-      'performanceTiming': {
-        'on': 'visible',
-        'request': 'timing',
-        'sampleSpec': {
-          'sampleOn': '${clientId}',
-          'threshold': 1,
-        },
-        'vars': {
-          'timingRequestType': 'timing',
-        },
-      },
-      'adwordsTiming': {
-        'on': 'visible',
-        'request': 'timing',
-        'enabled': '${queryParam(gclid)}',
-        'vars': {
-          'timingRequestType': 'adtiming',
-        },
-      },
-    },
-    'extraUrlParamsReplaceMap': {
-      'dimension': 'cd',
-      'metric': 'cm',
-    },
-    'optout': '_gaUserPrefs.ioo',
-  },
-
-  'krux': {
-    'requests': {
-      'beaconHost': 'https://beacon.krxd.net',
-      'timing': 't_navigation_type=0&' +
-        't_dns=${domainLookupTime}&' +
-        't_tcp=${tcpConnectTime}&' +
-        't_http_request=${serverResponseTime}&' +
-        't_http_response=${pageDownloadTime}&' +
-        't_content_ready=${contentLoadTime}&' +
-        't_window_load=${pageLoadTime}&' +
-        't_redirect=${redirectTime}',
-      'common': 'source=amp&' +
-        'confid=${confid}&' +
-        '_kpid=${pubid}&' +
-        '_kcp_s=${site}&' +
-        '_kcp_sc=${section}&' +
-        '_kcp_ssc=${subsection}&' +
-        '_kcp_d=${canonicalHost}&' +
-        '_kpref_=${documentReferrer}&' +
-        '_kua_kx_amp_client_id=${clientId(_kuid_)}&' +
-        '_kua_kx_lang=${browserLanguage}&' +
-        '_kua_kx_tech_browser_language=${browserLanguage}&' +
-        '_kua_kx_tz=${timezone}',
-      'pageview': '${beaconHost}/pixel.gif?${common}&${timing}',
-      'event': '${beaconHost}/event.gif?${common}&${timing}&pageview=false',
-    },
-    'transport': {
-      'beacon': false,
-      'xhrpost': false,
-      'image': true,
-    },
-    'extraUrlParamsReplaceMap': {
-      'user.': '_kua_',
-      'page.': '_kpa_',
-    },
-  },
-
   'lotame': {
     'requests': {
       'pageview': 'https://bcp.crwdcntrl.net/amp?c=${account}&pv=y',
@@ -922,6 +977,37 @@ export const ANALYTICS_CONFIG = /** @type {!JsonObject} */ ({
     },
     'transport': {
       'beacon': false,
+      'xhrpost': false,
+      'image': true,
+    },
+  },
+
+  'marinsoftware': {
+    'requests': {
+      'base': 'https://tracker.marinsm.com/tp',
+      'baseParams': 'cid=${trackerId}' +
+        '&ampVersion=${ampVersion}' +
+        '&ds=AMP' +
+        '&ref=${externalReferrer}' +
+        '&page=${sourceUrl}' +
+        '&uuid=${clientId(marin_amp_id)}' +
+        '&rnd=${random}',
+      'pageView': '${base}?' +
+        '${baseParams}' +
+        '&act=1',
+      'conversion': '${base}?' +
+        '${baseParams}' +
+        '&act=2' +
+        '&trans=UTM:I' +
+          '|${orderId}' +
+          '|${marinConversionType}' +
+          '|${productName}' +
+          '|${category}' +
+          '|${price}' +
+          '|${quantity}',
+    },
+    'transport': {
+      'beacon': true,
       'xhrpost': false,
       'image': true,
     },
@@ -989,9 +1075,10 @@ export const ANALYTICS_CONFIG = /** @type {!JsonObject} */ ({
 
   'mediator': {
     'requests': {
-      'host': '//collector.mediator.media/amp/?',
-      'prefix': '${host}cid=${mediator_id}&url=${canonicalUrl}' +
-                '&ref=${documentReferrer}&p=4&',
+      'host': '//collector.mediator.media/script/${mediator_id}/amp/',
+      'renderstart': '${host}init/?url=${canonicalUrl}',
+      'prefix': '${host}register/?url=${canonicalUrl}' +
+                '&ref=${documentReferrer}&',
       'suffix': 'vh=${viewportHeight}&sh=${scrollHeight}&st=${scrollTop}',
       'pageview': '${prefix}e=v',
       'timer': '${prefix}e=t&${suffix}',
@@ -1004,6 +1091,10 @@ export const ANALYTICS_CONFIG = /** @type {!JsonObject} */ ({
       'mediator_id': '',
     },
     'triggers': {
+      'renderStart': {
+        'on': 'render-start',
+        'request': 'renderstart',
+      },
       'trackPageview': {
         'on': 'visible',
         'request': 'pageview',
@@ -1100,6 +1191,55 @@ export const ANALYTICS_CONFIG = /** @type {!JsonObject} */ ({
     },
   },
 
+  'mobify': {
+    'vars': {
+      'projectSlug': 'mobify-project-id',
+      'templateName': 'page-type',
+    },
+    'requests': {
+      '_host': 'https://engagement-collector.mobify.net',
+      '_dimensions': [
+        '%22platform%22%3a%22AMP%22',
+        '%22client_id%22%3a%22${clientId(sandy-client-id)}%22',
+        '%22title%22%3a%22${title}%22',
+        '%22location%22%3a%22${sourceUrl}%22',
+        '%22page%22%3a%22${sourcePath}%22',
+        '%22src_location%22%3a%22${ampdocUrl}%22',
+        '%22referrer%22%3a%22${documentReferrer}%22',
+        '%22templateName%22%3a%22${templateName}%22',
+      ].join('%2c'),
+      '_basePrefix': '${_host}/s.gif?' +
+        'slug=${projectSlug}&' +
+        'timestamp_local=${timestamp}&' +
+        'channel=web&' +
+        'dimensions=%7b${_dimensions}%7d',
+      'ampstart': '${_basePrefix}&data=%7b%22category%22%3a%22timing%22%2c' +
+        '%22action%22%3a%22ampStart%22%2c%22value%22' +
+        '%3a${navTiming(navigationStart,domLoading)}%7d',
+      'pageview': '${_basePrefix}&data=%7b%22action%22%3a%22pageview%22%7d',
+      'pageload': '${_basePrefix}&data=%7b%22category%22%3a%22timing%22%2c' +
+        '%22action%22%3a%22load%22%2c%22value%22%3a${pageLoadTime}%7d',
+      'pagedcl': '${_basePrefix}&data=%7b%22category%22%3a%22timing%22%2c' +
+        '%22action%22%3a%22DOMContentLoaded%22%2c%22value%22' +
+        '%3a${contentLoadTime}%7d',
+    },
+    'triggers': {
+      'triggerName': {
+        'on': 'visible',
+        'request': ['ampstart', 'pageload', 'pagedcl'],
+      },
+      'pageview': {
+        'on': 'ini-load',
+        'request': 'pageview',
+      },
+    },
+    'transport': {
+      'beacon': true,
+      'xhrpost': false,
+      'image': true,
+    },
+  },
+
   'mparticle': {
     'vars': {
       'eventType': 'Unknown',
@@ -1187,10 +1327,11 @@ export const ANALYTICS_CONFIG = /** @type {!JsonObject} */ ({
   'nielsen': {
     'vars': {
       'sessionId': 'CLIENT_ID(imrworldwide)',
+      'prefix': '',
     },
     'requests': {
-      'session': 'https://uaid-linkage.imrworldwide.com/cgi-bin/gn?prd=session&c13=asid,P${apid}&sessionId=${sessionId}&pingtype=4&enc=false&c61=createtm,${timestamp}&rnd=${random}',
-      'cloudapi': 'https://cloudapi.imrworldwide.com/nmapi/v2/${apid}/${sessionId}/a?b=%7B%22devInfo%22%3A%7B%22devId%22%3A%22${sessionId}%22%2C%22apn%22%3A%22${apn}%22%2C%22apv%22%3A%22${apv}%22%2C%22apid%22%3A%22${apid}%22%7D%2C%22metadata%22%3A%7B%22static%22%3A%7B%22type%22%3A%22static%22%2C%22section%22%3A%22${section}%22%2C%22assetid%22%3A%22${pageViewId}%22%2C%22segA%22%3A%22${segA}%22%2C%22segB%22%3A%22${segB}%22%2C%22segC%22%3A%22${segC}%22%2C%22adModel%22%3A%220%22%2C%22dataSrc%22%3A%22cms%22%7D%2C%22content%22%3A%7B%7D%2C%22ad%22%3A%7B%7D%7D%2C%22event%22%3A%22playhead%22%2C%22position%22%3A%22${timestamp}%22%2C%22data%22%3A%7B%22hidden%22%3A%22${backgroundState}%22%2C%22blur%22%3A%22${backgroundState}%22%2C%22position%22%3A%22${timestamp}%22%7D%2C%22type%22%3A%22static%22%2C%22utc%22%3A%22${timestamp}%22%2C%22index%22%3A%22${requestCount}%22%7D',
+      'session': 'https://${prefix}uaid-linkage.imrworldwide.com/cgi-bin/gn?prd=session&c13=asid,P${apid}&sessionId=${sessionId}_${pageViewId}&pingtype=4&enc=false&c61=createtm,${timestamp}&rnd=${random}',
+      'cloudapi': 'https://${prefix}cloudapi.imrworldwide.com/nmapi/v2/${apid}/${sessionId}_${pageViewId}/a?b=%7B%22devInfo%22%3A%7B%22devId%22%3A%22${sessionId}_${pageViewId}%22%2C%22apn%22%3A%22${apn}%22%2C%22apv%22%3A%22${apv}%22%2C%22apid%22%3A%22${apid}%22%7D%2C%22metadata%22%3A%7B%22static%22%3A%7B%22type%22%3A%22static%22%2C%22section%22%3A%22${section}%22%2C%22assetid%22%3A%22${pageViewId}%22%2C%22segA%22%3A%22${segA}%22%2C%22segB%22%3A%22${segB}%22%2C%22segC%22%3A%22${segC}%22%2C%22adModel%22%3A%220%22%2C%22dataSrc%22%3A%22cms%22%7D%2C%22content%22%3A%7B%7D%2C%22ad%22%3A%7B%7D%7D%2C%22event%22%3A%22playhead%22%2C%22position%22%3A%22${timestamp}%22%2C%22data%22%3A%7B%22hidden%22%3A%22${backgroundState}%22%2C%22blur%22%3A%22${backgroundState}%22%2C%22position%22%3A%22${timestamp}%22%7D%2C%22type%22%3A%22static%22%2C%22utc%22%3A%22${timestamp}%22%2C%22index%22%3A%22${requestCount}%22%7D',
     },
     'triggers': {
       'visible': {
@@ -1215,6 +1356,7 @@ export const ANALYTICS_CONFIG = /** @type {!JsonObject} */ ({
       'beacon': false,
       'xhrpost': false,
       'image': true,
+      'referrerPolicy': 'no-referrer',
     },
   },
 
@@ -1285,11 +1427,22 @@ export const ANALYTICS_CONFIG = /** @type {!JsonObject} */ ({
         'date=${timestamp}&' +
         'ampid=${clientId(_parsely_visitor)}',
       'pageview': '${basePrefix}&action=pageview',
+      'heartbeat': '${basePrefix}&action=heartbeat' +
+      '&tt=${totalEngagedTime}&inc=${incrementalEngagedTime(parsely-js)}',
     },
     'triggers': {
       'defaultPageview': {
         'on': 'visible',
         'request': 'pageview',
+      },
+      'defaultHeartbeat': {
+        'on': 'timer',
+        'enabled': '${incrementalEngagedTime(parsely-js,false)}',
+        'timerSpec': {
+          'interval': 10,
+          'maxTimerLength': 7200,
+        },
+        'request': 'heartbeat',
       },
     },
     'transport': {
@@ -1310,6 +1463,37 @@ export const ANALYTICS_CONFIG = /** @type {!JsonObject} */ ({
         'content_author=${contentAuthor}&content_section=${contentSection}&' +
         'timezone_offset=${timezone}&tags=${tags}&amp_url=${ampdocUrl}&' +
         'screen=${screenWidth}x${screenHeight}${baseSuffix}',
+    },
+  },
+
+  'piStats': {
+    'requests': {
+      'host': 'https://events.pi-stats.com',
+      'basePrefix': '${host}/eventsamp/?' +
+          'e=PageLoad&' +
+          'pid=${property}&' +
+          'url=${ampdocUrl}&' +
+          'cnt=${cntId}&' +
+          'lang=${language}&' +
+          'ref=${documentReferrer}&' +
+          'id=${clientId(piStatsDEVICEID)}&' +
+          'ua=${userAgent}&' +
+          'ctype=web&' +
+          'blang=${browserLanguage}&' +
+          'v=2.0&' +
+          'dist=Javascript',
+      'pageview': '${basePrefix}&eventtype=pageview',
+    },
+    'triggers': {
+      'defaultPageview': {
+        'on': 'visible',
+        'request': 'pageview',
+      },
+    },
+    'transport': {
+      'beacon': false,
+      'xhrpost': false,
+      'image': true,
     },
   },
 
@@ -1387,6 +1571,7 @@ export const ANALYTICS_CONFIG = /** @type {!JsonObject} */ ({
         '&ap=${ap}' +
         '&co=${co}' +
         '&cp=${cp}' +
+        '&ps=${ps}' +
         '&host=${canonicalHost}' +
         '&path=${canonicalPath}',
     },
@@ -1485,7 +1670,7 @@ export const ANALYTICS_CONFIG = /** @type {!JsonObject} */ ({
       'commpar': 'AMP=1&RM=${random}' +
                  '&USER=${account}' +
                  '&PAG=${page}' +
-                 '&HR=${canonicalUrl}' +
+                 '&HR=${sourceUrl}' +
                  '&REFER=${documentReferrer}' +
                  '&RES=${screenWidth}X${screenHeight}' +
                  '&COLOR=${screenColorDepth}' +
@@ -1575,6 +1760,35 @@ export const ANALYTICS_CONFIG = /** @type {!JsonObject} */ ({
     },
   },
 
+  'treasuredata': {
+    'vars': {
+      'host': 'in.treasuredata.com',
+      'writeKey': '',
+      'database': '',
+      'table': 'events',
+    },
+    'requests': {
+      'base': 'https://${host}/postback/v3/event/${database}',
+      'baseParams': 'td_write_key=${writeKey}' +
+        '&td_global_id=td_global_id' +
+        '&td_client_id=CLIENT_ID(_td)' +
+        '&td_charset=DOCUMENT_CHARSET' +
+        '&td_language=BROWSER_LANGUAGE' +
+        '&td_color=SCREEN_COLOR_DEPTH' +
+        '&td_screen=${screenWidth}x${scrollHeight}' +
+        '&td_viewport=${availableScreenWidth}x${availableScreenHeight}' +
+        '&td_title=TITLE' +
+        '&td_url=SOURCE_URL' +
+        '&td_user_agent=USER_AGENT' +
+        '&td_host=SOURCE_HOST' +
+        '&td_path=SOURCE_PATH' +
+        '&td_referrer=DOCUMENT_REFERRER' +
+        '&td_ip=td_ip',
+      'pageview': '${base}/${table}?${baseParams}',
+      'event': '${base}/${table}?${baseParams}',
+    },
+  },
+
   'webtrekk': {
     'requests': {
       'trackURL': 'https://${trackDomain}/${trackId}/wt',
@@ -1603,6 +1817,54 @@ export const ANALYTICS_CONFIG = /** @type {!JsonObject} */ ({
         '&ck4=${actionParameter4}&ck5=${actionParameter5}',
       'event': '${trackURL}${parameterPrefix}&ct=${actionName}' +
         '${actionParameter}${parameterSuffix}',
+    },
+    'transport': {
+      'beacon': false,
+      'xhrpost': false,
+      'image': true,
+    },
+  },
+
+  'webtrekk_v2': {
+    'vars': {
+      'actionName': 'webtrekk_ignore',
+      'contentId': '${title}',
+      'mediaName': '${id}',
+      'everId': '${clientId(amp-wt3-eid)}',
+    },
+    'requests': {
+      'trackURL': 'https://${trackDomain}/${trackId}/wt',
+      'basePrefix': '?p=440,${contentId},1,' +
+        '${screenWidth}x${screenHeight},${screenColorDepth},1,',
+      'baseSuffix': ',${documentReferrer},' +
+        '${viewportWidth}x${viewportHeight},0' +
+        '&tz=${timezone}&eid=${everId}&la=${browserLanguage}',
+      'parameterPrefix': '${basePrefix}${timestamp}${baseSuffix}',
+      'parameterSuffix': '&pu=${sourceUrl}&eor=1',
+      'pageview': '${trackURL}${parameterPrefix}&${extraUrlParams}' +
+        '&cp570=${pageLoadTime}${parameterSuffix}',
+      'event': '${trackURL}${parameterPrefix}&ct=${actionName}' +
+        '&${extraUrlParams}${parameterSuffix}',
+      'scroll': '${trackURL}${parameterPrefix}&ct=${actionName}' +
+        '&ck540=${verticalScrollBoundary}${parameterSuffix}',
+      'mediaPrefix': '${trackURL}${basePrefix}${baseSuffix}' +
+        '&mi=${mediaName}',
+      'mediaSuffix': '&mt1=${currentTime}&mt2=${duration}' +
+        '&${extraUrlParams}${parameterSuffix}&x=${playedTotal}',
+      'mediaPlay': '${mediaPrefix}&mk=play${mediaSuffix}',
+      'mediaPause': '${mediaPrefix}&mk=pause${mediaSuffix}',
+      'mediaPosition': '${mediaPrefix}&mk=pos${mediaSuffix}',
+      'mediaEnded': '${mediaPrefix}&mk=eof${mediaSuffix}',
+    },
+    'extraUrlParamsReplaceMap': {
+      'pageParameter': 'cp',
+      'contentGroup': 'cg',
+      'actionParameter': 'ck',
+      'sessionParameter': 'cs',
+      'ecommerceParameter': 'cb',
+      'urmCategory': 'uc',
+      'campaignParameter': 'cc',
+      'mediaCategory': 'mg',
     },
     'transport': {
       'beacon': false,
@@ -1834,13 +2096,239 @@ export const ANALYTICS_CONFIG = /** @type {!JsonObject} */ ({
     },
   },
 
+  'oracleInfinityAnalytics': {
+    'transport': {
+      'beacon': false,
+      'xhrpost': false,
+      'image': true,
+    },
+    'requests': {
+      'host': 'https://dc.oracleinfinity.io/${guid}/dcs.gif?',
+      'baseUrl': 'dcssip=${dcssip}&dcsuri=${dcsuri}',
+      'baseRef': '&dcsref=${documentReferrer}',
+      'baseEs': '&WT.es=${sourceHost}${sourcePath}',
+      'baseTi': '&WT.ti=${ti}&dcsdat=${timestamp}',
+      'basePrefix': '${baseUrl}${baseTi}${baseRef}${baseEs}',
+      'screenBs': '&WT.bs=${availableScreenWidth}x${availableScreenHeight}',
+      'screenSr': '&WT.sr=${screenWidth}x${screenHeight}',
+      'screenDc': '&WT.cd=${screenColorDepth}',
+      'screenMeasures': '${screenBs}${screenSr}${screenDc}',
+      'browserUl': '&WT.ul=${browserLanguage}',
+      'browserLe': '&WT.le=${documentCharset}',
+      'browserMeasures': '${browserUl}${browserLe}&WT.js=Yes',
+      'sessCof': '&WT.co_f=${clientId(WT_AMP)}',
+      'sessVer': '&ora.tv_amp=1.0.0&ora.amp_ver=${ampVersion}',
+      'sessionization': '${sessCof}${sessVer}&dcscfg=3',
+      'baseP1': '${host}${basePrefix}',
+      'baseP2': '${screenMeasures}${browserMeasures}${sessionization}',
+      'baseDl': '&WT.dl=${dl}',
+      'pageview': '${baseP1}${baseP2}${baseDl}',
+      'event': '${baseP1}${baseP2}${baseDl}',
+      'dlPdf': 'a[href$=".pdf"]',
+      'dlXls': ',a[href$=".xls"]',
+      'dlPpt': ',a[href$=".ppt"]',
+      'dlZip': ',a[href$=".zip"]',
+      'dlTxt': ',a[href$=".txt"]',
+      'dlRtf': ',a[href$=".rtf"]',
+      'dlXml': ',a[href$=".xml"]',
+      'downLoad': '${dlPdf}${dlXls}${dlPpt}${dlZip}${dlTxt}${dlRtf}${dlXml}',
+    },
+    'vars': {
+      'dcssip': '${sourceHost}',
+      'dcsuri': '${sourcePath}',
+      'dl': '0',
+      'ti': '${title}',
+    },
+    'triggers': {
+      'trackPageview': {
+        'on': 'visible',
+        'request': 'pageview',
+      },
+      'trackAnchorClicks': {
+        'on': 'click',
+        'selector': 'a',
+        'request': 'event',
+        'vars': {
+          'dl': '99',
+          'ti': 'Link Click',
+        },
+      },
+    },
+    'trackDownloadClicks': {
+      'on': 'click',
+      'selector': '${downLoad}',
+      'request': 'event',
+      'vars': {
+        'dl': '20',
+        'ti': 'Download Click',
+      },
+    },
+  },
+
+  'moat': {
+    'vars': {
+      'element': ':root',
+    },
+    'requests': {
+      'load': JSON.stringify(/** @type {!JsonObject} */ ({
+        'type': 'load',
+        'pcode': '${pcode}',
+        'l0t': '${l0t}',
+        'acctType': '${acctType}',
+        'adType': '${adType}',
+        'qs': '${qs}',
+        'element': {
+          'src': '${htmlAttr(img,src,width)}',
+          'viewer': '${viewer}',
+        },
+        'document': {
+          'AMPDocumentHostname': '${ampdocHostname}',
+          'AMPDocumentURL': '${ampdocUrl}',
+          'canonicalHost': '${canonicalHost}',
+          'canonicalHostname': '${canonicalHostname}',
+          'canonicalPath': '${canonicalPath}',
+          'canonicalURL': '${canonicalUrl}',
+          'documentCharset': '${documentCharset}',
+          'documentReferrer': '${documentReferrer}',
+          'externalReferrer': '${externalReferrer}',
+          'sourceURL': '${sourceUrl}',
+          'sourceHost': '${sourceHost}',
+          'sourceHostname': '${sourceHostname}',
+          'sourcePath': '${sourcePath}',
+          'title': '${title}',
+          'viewer': '${viewer}',
+        },
+        'device': {
+          'availableScreenHeight': '${availableScreenHeight}',
+          'availableScreenWidth': '${availableScreenWidth}',
+          'browserLanguage': '${browserLanguage}',
+          'screenColorDepth': '${screenColorDepth}',
+          'screenHeight': '${screenHeight}',
+          'screenWidth': '${screenWidth}',
+          'scrollHeight': '${scrollHeight}',
+          'scrollWidth': '${scrollWidth}',
+          'scrollLeft': '${scrollLeft}',
+          'scrollTop': '${scrollTop}',
+          'timezone': '${timezone}',
+          'userAgent': '${userAgent}',
+          'viewportHeight': '${viewportHeight}',
+          'viewportWidth': '${viewportWidth}',
+        },
+        'requestCount': '${requestCount}',
+        'timeStamp': '${timestamp}',
+      })),
+      'unload': JSON.stringify(/** @type {!JsonObject} */ ({
+        'type': 'unload',
+        'pcode': '${pcode}',
+        'l0t': '${l0t}',
+        'requestCount': '${requestCount}',
+        'timeStamp': '${timestamp}',
+      })),
+      'click': JSON.stringify(/** @type {!JsonObject} */ ({
+        'type': 'click',
+        'pcode': '${pcode}',
+        'l0t': '${l0t}',
+        'requestCount': '${requestCount}',
+        'timeStamp': '${timestamp}',
+      })),
+      'viewability': JSON.stringify(/** @type {!JsonObject} */ ({
+        'type': 'viewability',
+        'pcode': '${pcode}',
+        'l0t': '${l0t}',
+        'backgroundState': '${backgroundState}',
+        'intersectionRect': '${intersectionRect}',
+        'intersectionRatio': '${intersectionRatio}',
+        'maxVisiblePercentage': '${maxVisiblePercentage}',
+        'minVisiblePercentage': '${minVisiblePercentage}',
+        'x': '${elementX}',
+        'y': '${elementY}',
+        'height': '${elementHeight}',
+        'width': '${elementWidth}',
+        'viewportHeight': '${viewportHeight}',
+        'viewportWidth': '${viewportWidth}',
+        'opacity': '${opacity}',
+        'timeStamp': '${timestamp}',
+        'requestCount': '${requestCount}',
+      })),
+      'iframe': JSON.stringify(/** @type {!JsonObject} */ ({
+        'type': 'iframe',
+        'pcode': '${pcode}',
+        'height': '${elementHeight}',
+        'width': '${elementWidth}',
+        'x': '${elementX}',
+        'y': '${elementY}',
+        'requestCount': '${requestCount}',
+      })),
+    },
+    'triggers': {
+      'load': {
+        'on': 'ini-load',
+        'request': 'load',
+      },
+      'unload': {
+        'on': 'ad-refresh',
+        'selector': '${element}',
+        'request': 'unload',
+      },
+      'click': {
+        'on': 'click',
+        'selector': '${element}',
+        'request': 'click',
+      },
+      'viewability': {
+        'on': 'visible',
+        'selector': '${element}',
+        'request': 'viewability',
+        'visibilitySpec': {
+          'repeat': true,
+          'visiblePercentageThresholds': [
+            [0,0],[0,5],[5,10],[10,15],[15,20],[20,25],
+            [25,30],[30,35],[35,40],[40,45],[45,50],
+            [50,55],[55,60],[60,65],[65,70],[70,75],
+            [75,80],[80,85],[85,90],[90,95],[95,100],[100,100],
+          ],
+        },
+      },
+      'iframe': {
+        'on': 'visible',
+        'selector': ':root',
+        'request': 'iframe',
+        'visibilitySpec': {
+          'repeat': true,
+          'visiblePercentageThresholds': [[0,0]],
+        },
+      },
+    },
+  },
+
+  'bg': {
+  },
 });
+
 ANALYTICS_CONFIG['infonline']['triggers']['pageview']['iframe' +
 /* TEMPORARY EXCEPTION */ 'Ping'] = true;
 
 ANALYTICS_CONFIG['adobeanalytics_nativeConfig']
-  ['triggers']['pageLoad']['iframe' +
-/* TEMPORARY EXCEPTION */ 'Ping'] = true;
+    ['triggers']['pageLoad']['iframe' +
+    /* TEMPORARY EXCEPTION */ 'Ping'] = true;
 
 ANALYTICS_CONFIG['oewa']['triggers']['pageview']['iframe' +
 /* TEMPORARY EXCEPTION */ 'Ping'] = true;
+
+mergeIframeTransportConfig(ANALYTICS_CONFIG, IFRAME_TRANSPORTS);
+
+/**
+ * Merges iframe transport config.
+ *
+ * @param {!JsonObject} config
+ * @param {!JsonObject} iframeTransportConfig
+ */
+function mergeIframeTransportConfig(config, iframeTransportConfig) {
+  for (const vendor in iframeTransportConfig) {
+    if (hasOwn(iframeTransportConfig, vendor)) {
+      const url = iframeTransportConfig[vendor];
+      config[vendor]['transport'] =
+          Object.assign({}, config[vendor]['transport'], {'iframe': url});
+    }
+  }
+}

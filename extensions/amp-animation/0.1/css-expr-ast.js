@@ -31,7 +31,7 @@ const INFINITY_RE = /^(infinity|infinite)$/i;
  * @return {boolean}
  */
 export function isVarCss(css, normalize) {
-  return VAR_CSS_RE.test(css) || normalize && NORM_CSS_RE.test(css);
+  return VAR_CSS_RE.test(css) || (normalize && NORM_CSS_RE.test(css));
 }
 
 
@@ -118,6 +118,9 @@ export class CssContext {
  * @abstract
  */
 export class CssNode {
+  /**
+   * Creates an instance of CssNode.
+   */
   constructor() {}
 
   /**
@@ -440,8 +443,8 @@ export class CssLengthNode extends CssNumericNode {
     // Font-based: em/rem.
     if (this.units_ == 'em' || this.units_ == 'rem') {
       const fontSize = this.units_ == 'em' ?
-          context.getCurrentFontSize() :
-          context.getRootFontSize();
+        context.getCurrentFontSize() :
+        context.getRootFontSize();
       return new CssLengthNode(this.num_ * fontSize, 'px');
     }
 
@@ -649,10 +652,10 @@ export class CssTranslateNode extends CssFuncNode {
   constructor(suffix, args) {
     super(`translate${suffix.toUpperCase()}`, args,
         suffix == '' ? ['w', 'h'] :
-        suffix == 'x' ? ['w'] :
-        suffix == 'y' ? ['h'] :
-        suffix == 'z' ? ['z'] :
-        suffix == '3d' ? ['w', 'h', 'z'] : null);
+          suffix == 'x' ? ['w'] :
+            suffix == 'y' ? ['h'] :
+              suffix == 'z' ? ['z'] :
+                suffix == '3d' ? ['w', 'h', 'z'] : null);
     /** @const @private {string} */
     this.suffix_ = suffix;
   }
@@ -692,8 +695,8 @@ export class CssDimSizeNode extends CssNode {
   calc(context) {
     const size =
         this.selector_ ?
-        context.getElementSize(this.selector_, this.selectionMethod_) :
-        context.getCurrentElementSize();
+          context.getElementSize(this.selector_, this.selectionMethod_) :
+          context.getCurrentElementSize();
     return new CssLengthNode(getDimSide(this.dim_, size), 'px');
   }
 }
@@ -817,6 +820,9 @@ export class CssRandNode extends CssNode {
  * target in a list of all selected targets.
  */
 export class CssIndexNode extends CssNode {
+  /**
+   * Creates an instance of CssIndexNode.
+   */
   constructor() {
     super();
   }

@@ -26,6 +26,7 @@ AMP video analytics gathers data about how users interact with videos in AMP doc
 | `<amp-video>` | Full support |
 | `<amp-3q-player>` | Partial support<sup>[1]</sup> |
 | `<amp-brid-player>` | Partial support<sup>[1]</sup> |
+| `<amp-brightcove>` | Partial support<sup>[1]</sup> |
 | `<amp-dailymotion>` | Partial support<sup>[1]</sup> |
 | `<amp-ima-video>` | Partial support<sup>[1]</sup> |
 | `<amp-nexxtv-player>` | Partial support<sup>[1]</sup> |
@@ -49,8 +50,8 @@ The `video-play` trigger is fired when the video begins playing from a user clic
 "triggers": {
   "myVideoPlay": {
     "on": "video-play",
-    "request": "event"
-    "selector": "#myVideo",
+    "request": "event",
+    "selector": "#myVideo"
   },
   "videoSpec": {/* optional videoSpec */}
 }
@@ -64,8 +65,8 @@ The `video-pause` trigger is fired when the video stops playing from a user clic
 "triggers": {
   "myVideoPause": {
     "on": "video-pause",
-    "request": "event"
-    "selector": "#myVideo",
+    "request": "event",
+    "selector": "#myVideo"
   },
   "videoSpec": {/* optional videoSpec */}
 }
@@ -79,8 +80,8 @@ The `video-ended` trigger is fired when the video has reached the end of playbac
 "triggers": {
   "myVideoEnded": {
     "on": "video-ended",
-    "request": "event"
-    "selector": "#myVideo",
+    "request": "event",
+    "selector": "#myVideo"
   },
   "videoSpec": {/* optional videoSpec */}
 }
@@ -102,8 +103,8 @@ The `video-session` trigger is fired when a "video session" has ended. A video s
 "triggers": {
   "myVideoSession": {
     "on": "video-session",
-    "request": "event"
-    "selector": "#myVideo",
+    "request": "event",
+    "selector": "#myVideo"
   },
   "videoSpec": {/* optional videoSpec */}
 }
@@ -117,8 +118,8 @@ The `video-seconds-played` trigger is fired every `interval` seconds when the vi
 "triggers": {
   "myVideoSecondsPlayed": {
     "on": "video-seconds-played",
-    "request": "event"
-    "selector": "#myVideo",
+    "request": "event",
+    "selector": "#myVideo"
   },
   "videoSpec": {
     "interval": 10, /* required */

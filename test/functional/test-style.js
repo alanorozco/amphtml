@@ -15,14 +15,13 @@
  */
 
 import * as st from '../../src/style';
-import * as sinon from 'sinon';
 
 describe('Style', () => {
 
   let sandbox;
 
   beforeEach(() => {
-    sandbox = sinon.sandbox.create();
+    sandbox = sinon.sandbox;
   });
 
   afterEach(() => {
@@ -61,6 +60,16 @@ describe('Style', () => {
     });
     expect(element.style.width).to.equal('101px');
     expect(element.style.height).to.equal('102px');
+  });
+
+  it('setImportantStyles', () => {
+    const element = document.createElement('div');
+    st.setImportantStyles(element, {
+      width: st.px(101),
+    });
+    expect(element.style.width).to.equal('101px');
+    expect(element.style.getPropertyPriority('width'))
+        .to.equal('important');
   });
 
   it('px', () => {

@@ -14,11 +14,11 @@
  * limitations under the License.
  */
 
-import {getA4ARegistry} from '../../../../ads/_a4a-config';
-import {adConfig} from '../../../../ads/_config';
 import {AmpAd} from '../amp-ad';
 import {AmpAd3PImpl} from '../amp-ad-3p-impl';
 import {Services} from '../../../../src/services';
+import {adConfig} from '../../../../ads/_config';
+import {getA4ARegistry} from '../../../../ads/_a4a-config';
 import {stubService} from '../../../../testing/test-helper';
 
 
@@ -123,6 +123,7 @@ describes.realWin('Ad loader', {amp: true}, env => {
             .withArgs('amp-ad-network-zort-impl')
             .returns(Promise.reject(new Error('I failed!')));
         ampAd = new AmpAd(ampAdElement);
+        sandbox.stub(ampAd.user(), 'error');
         return ampAd.upgradeCallback().then(baseElement => {
           expect(extensionsStub).to.be.called;
           expect(ampAdElement.getAttribute(
@@ -244,12 +245,15 @@ describes.realWin('Ad loader', {amp: true}, env => {
         ampAd = new AmpAd(ampAdElement);
         const upgradePromise = ampAd.upgradeCallback();
         Promise.resolve().then(() => {
-          const zortInstance = {};
-          const zortConstructor = function() { return zortInstance; };
-          const extensions = Services.extensionsFor(win);
-          extensions.registerExtension_('amp-ad-network-zort-impl', () => {
-            extensions.addElement_('amp-ad-network-zort-impl', zortConstructor);
-          }, {});
+          Services.vsyncFor(win).mutate(() => {
+            const zortInstance = {};
+            const zortConstructor = function() { return zortInstance; };
+            const extensions = Services.extensionsFor(win);
+            extensions.registerExtension('amp-ad-network-zort-impl', () => {
+              extensions.addElement('amp-ad-network-zort-impl',
+                  zortConstructor);
+            }, {});
+          });
         });
         return upgradePromise.then(element => {
           expect(element).to.not.be.null;

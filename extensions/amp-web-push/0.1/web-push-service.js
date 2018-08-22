@@ -14,17 +14,17 @@
  * the License.
  */
 
-import {getMode} from '../../../src/mode';
-import {dev, user} from '../../../src/log';
 import {CSS} from '../../../build/amp-web-push-0.1.css';
 import {IFrameHost} from './iframehost';
-import {WindowMessenger} from './window-messenger';
-import {installStylesForDoc} from '../../../src/style-installer';
-import {openWindowDialog} from '../../../src/dom';
-import {parseUrl, parseQueryString} from '../../../src/url';
-import {TAG, WIDGET_TAG, NotificationPermission, StorageKeys} from './vars';
-import {WebPushWidgetVisibilities} from './amp-web-push-widget';
+import {NotificationPermission, StorageKeys, TAG, WIDGET_TAG} from './vars';
 import {Services} from '../../../src/services';
+import {WebPushWidgetVisibilities} from './amp-web-push-widget';
+import {WindowMessenger} from './window-messenger';
+import {dev, user} from '../../../src/log';
+import {escapeCssSelectorIdent, openWindowDialog} from '../../../src/dom';
+import {getMode} from '../../../src/mode';
+import {installStylesForDoc} from '../../../src/style-installer';
+import {parseQueryString, parseUrlDeprecated} from '../../../src/url';
 
 /** @typedef {{
  *    isControllingFrame: boolean,
@@ -140,7 +140,7 @@ export class WebPushService {
   /**
    * Occurs when the config element loads.
    * @param {!AmpWebPushConfig} configJson
-   * @returns {!Promise}
+   * @return {!Promise}
    */
   start(configJson) {
     dev().fine(TAG, 'amp-web-push extension starting up.');
@@ -162,11 +162,11 @@ export class WebPushService {
               TAG,
               `Helper frame ${this.config_['helper-iframe-url']} ` +
             'DOM loaded. Connecting to the frame via postMessage()...'
-        );
+          );
           return this.frameMessenger_.connect(
               this.iframe_.getDomElement().contentWindow,
-              parseUrl(this.config_['helper-iframe-url']).origin
-        );
+              parseUrlDeprecated(this.config_['helper-iframe-url']).origin
+          );
         })
         .then(() => {
           if (this.isContinuingSubscriptionFromRedirect()) {
@@ -271,9 +271,9 @@ export class WebPushService {
             return replyPayload.result;
           } else {
             throw new Error(
-            `AMP page helper iframe query topic ${messageTopic} ` +
+                `AMP page helper iframe query topic ${messageTopic} ` +
               `and message ${message} failed with: ${replyPayload.error}`
-          );
+            );
           }
         });
   }
@@ -400,9 +400,9 @@ export class WebPushService {
    * @return {boolean}
    */
   isUrlSimilarForQueryParams(originalUrlString, urlToTestString) {
-    const originalUrl = parseUrl(originalUrlString);
+    const originalUrl = parseUrlDeprecated(originalUrlString);
     const originalUrlQueryParams = parseQueryString(originalUrl.search);
-    const urlToTest = parseUrl(urlToTestString);
+    const urlToTest = parseUrlDeprecated(urlToTestString);
     const urlToTestQueryParams = parseQueryString(urlToTest.search);
 
     // The URL to test may have more query params than the original URL, but it
@@ -436,8 +436,10 @@ export class WebPushService {
    */
   setWidgetVisibilities(widgetCategoryName, isVisible) {
     const widgetDomElements = this.ampdoc
-      .getRootNode()
-      .querySelectorAll(`${WIDGET_TAG}[visibility=${widgetCategoryName}]`);
+        .getRootNode()
+        .querySelectorAll(`${escapeCssSelectorIdent(WIDGET_TAG)}[visibility=${
+          escapeCssSelectorIdent(widgetCategoryName)
+        }]`);
     const invisibilityCssClassName = 'amp-invisible';
 
     for (let i = 0; i < widgetDomElements.length; i++) {
@@ -460,14 +462,17 @@ export class WebPushService {
    */
   doesWidgetCategoryMarkupExist_(widgetCategoryName) {
     const widgetDomElements = this.ampdoc
-      .getRootNode()
-      .querySelectorAll(`${WIDGET_TAG}[visibility=${widgetCategoryName}]`);
+        .getRootNode()
+        .querySelectorAll(`${escapeCssSelectorIdent(WIDGET_TAG)}[visibility=${
+          escapeCssSelectorIdent(widgetCategoryName)
+        }]`);
 
     return widgetDomElements.length > 0;
   }
 
   /**
    * @private
+   * @param {*} subscriptionStateReply
    * @return {(number|undefined)}
    */
   getSubscriptionStateReplyVersion_(subscriptionStateReply) {
@@ -539,12 +544,12 @@ export class WebPushService {
           */
             return this.getCanonicalFrameStorageValue_(
                 StorageKeys.NOTIFICATION_PERMISSION
-          );
+            );
           } else {
           /*
             The site is running our initial AMP web push release and the helper
-            frame does not support retrieving the remote storage value. Assume the
-            permission is default to provide the best user experience.
+            frame does not support retrieving the remote storage value. Assume
+            the permission is default to provide the best user experience.
           */
             return Promise.resolve(NotificationPermission.DEFAULT);
           }
@@ -553,8 +558,8 @@ export class WebPushService {
           /*
             If the canonical notification permission is:
               - Blocked
-                - If the publisher has defined a blocked widget section, show it,
-                  otherwise show the unsubscribed widget.
+                - If the publisher has defined a blocked widget section, show
+                  it, otherwise show the unsubscribed widget.
               - Default or Granted
                 - Resume flow
           */
@@ -564,7 +569,7 @@ export class WebPushService {
               this.doesWidgetCategoryMarkupExist_(
                   WebPushWidgetVisibilities.BLOCKED
               )
-          ) {
+            ) {
               this.updateWidgetVisibilitiesBlocked_();
             } else {
               this.updateWidgetVisibilitiesUnsubscribed_();
@@ -578,16 +583,9 @@ export class WebPushService {
                     this.updateWidgetVisibilitiesUnsubscribed_();
                   }
                 }
-          );
+            );
           }
         });
-  }
-
-  /** @private */
-  updateWidgetVisibilitiesNotificationPermissionsBlocked_() {
-    this.setWidgetVisibilities(WebPushWidgetVisibilities.UNSUBSCRIBED, false);
-    this.setWidgetVisibilities(WebPushWidgetVisibilities.SUBSCRIBED, false);
-    this.setWidgetVisibilities(WebPushWidgetVisibilities.BLOCKED, true);
   }
 
   /** @private */
@@ -606,15 +604,15 @@ export class WebPushService {
                 this.setWidgetVisibilities(
                     WebPushWidgetVisibilities.UNSUBSCRIBED,
                     false
-              );
+                );
                 this.setWidgetVisibilities(
                     WebPushWidgetVisibilities.SUBSCRIBED,
                     true
-              );
+                );
                 this.setWidgetVisibilities(
                     WebPushWidgetVisibilities.BLOCKED,
                     false
-              );
+                );
               } else {
                 this.updateWidgetVisibilitiesUnsubscribed_();
               }
@@ -627,7 +625,7 @@ export class WebPushService {
               throw user().createError(
                   'The controlling service worker replied to amp-web-push ' +
                 'with an unexpected value.'
-            );
+              );
           }
         }),
         'The controlling service worker does not support amp-web-push.'
@@ -717,6 +715,7 @@ export class WebPushService {
    * callback is executed.
    *
    * @param {?Window} permissionDialogWindow
+   * @param {!Function} onPopupClosed
    * @private
    */
   checkPermissionDialogClosedInterval_(permissionDialogWindow, onPopupClosed) {
@@ -917,7 +916,7 @@ export class WebPushService {
         '',
         this.removePermissionPopupUrlFragmentFromUrl(
             this.ampdoc.win.location.href
-      )
+        )
     );
 
     this.queryNotificationPermission().then(permission => {
@@ -940,7 +939,7 @@ export class WebPushService {
    * Returns true if the Service Worker API, Push API, and Notification API are
    * supported and the page is HTTPS.
    *
-   * @returns {boolean}
+   * @return {boolean}
    */
   environmentSupportsWebPush() {
     return this.arePushRelatedApisSupported_() && this.isAmpPageHttps_();
@@ -956,7 +955,7 @@ export class WebPushService {
    * that AMP, a mobile-only feature, won't be supporting Safari until Safari
    * actually develops mobile push support.
    *
-   * @returns {boolean}
+   * @return {boolean}
    * @private
    */
   arePushRelatedApisSupported_() {

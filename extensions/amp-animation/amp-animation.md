@@ -19,7 +19,7 @@ limitations under the License.
 <table>
   <tr>
     <td width="40%"><strong>Description</strong></td>
-    <td>Animation component</td>
+    <td>Defines and runs animations.</td>
   </tr>
   <tr>
     <td width="40%"><strong>Required Script</strong></td>
@@ -28,6 +28,10 @@ limitations under the License.
   <tr>
     <td class="col-fourty"><strong><a href="https://www.ampproject.org/docs/guides/responsive/control_layout.html">Supported Layouts</a></strong></td>
     <td>nodisplay</td>
+  </tr>
+  <tr>
+    <td class="col-fourty"><strong>Examples</strong></td>
+    <td><a href="https://github.com/ampproject/amphtml/blob/master/examples/animations.amp.html">animations.amp.html</a></td>
   </tr>
 </table>
 
@@ -67,8 +71,7 @@ defined as an `animations` array:
 
 ### Placement in DOM
 
-Initially, `<amp-animation>` is only allowed to be placed as a direct child of `<body>` element. This restriction
-will be removed in the near future.
+`<amp-animation>` is only allowed to be placed as a direct child of `<body>` element if `trigger="visibility"`. If `trigger` is not specified and animation's playback is controlled programmatically via its actions, it can be placed anywhere in the DOM.
 
 ### Animation component
 

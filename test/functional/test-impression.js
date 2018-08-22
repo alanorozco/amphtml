@@ -14,18 +14,17 @@
  * limitations under the License.
  */
 
+import {Services} from '../../src/services';
 import {
+  getExtraParamsUrl,
   getTrackImpressionPromise,
   maybeTrackImpression,
   resetTrackImpressionPromiseForTesting,
   shouldAppendExtraParams,
-  getExtraParamsUrl,
 } from '../../src/impression';
-import {toggleExperiment} from '../../src/experiments';
-import {Services} from '../../src/services';
 import {macroTask} from '../../testing/yield';
+import {toggleExperiment} from '../../src/experiments';
 import {user} from '../../src/log';
-import * as sinon from 'sinon';
 
 describe('impression', () => {
 
@@ -37,7 +36,7 @@ describe('impression', () => {
   let warnStub;
 
   beforeEach(() => {
-    sandbox = sinon.sandbox.create();
+    sandbox = sinon.sandbox;
     viewer = Services.viewerForDoc(window.document);
     sandbox.stub(viewer, 'getParam');
     sandbox.stub(viewer, 'hasCapability');
@@ -52,10 +51,10 @@ describe('impression', () => {
     }));
     sandbox.stub(viewer, 'whenFirstVisible').returns(Promise.resolve());
     isTrustedViewer = false;
-    sandbox.stub(viewer, 'isTrustedViewer', () => {
+    sandbox.stub(viewer, 'isTrustedViewer').callsFake(() => {
       return Promise.resolve(isTrustedViewer);
     });
-    sandbox.stub(viewer, 'isTrustedReferrer', () => {
+    sandbox.stub(viewer, 'isTrustedReferrer').callsFake(() => {
       return Promise.resolve(isTrustedReferrer);
     });
     resetTrackImpressionPromiseForTesting();
@@ -188,7 +187,7 @@ describe('impression', () => {
       xhr.fetchJson.returns(new Promise(() => {
         // never resolves
       }));
-      const href = window.location.href;
+      const {href} = window.location;
       const clock = sandbox.useFakeTimers();
       maybeTrackImpression(window);
       clock.tick(8001);

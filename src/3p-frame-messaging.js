@@ -22,7 +22,12 @@ import {parseJson} from './json';
 
 /** @const */
 const AMP_MESSAGE_PREFIX = 'amp-';
-
+export const CONSTANTS = {
+  responseTypeSuffix: '-result',
+  messageIdFieldName: 'messageId',
+  payloadFieldName: 'payload',
+  contentFieldName: 'content',
+};
 
 /** @enum {string} */
 export const MessageType = {
@@ -37,6 +42,8 @@ export const MessageType = {
   EMBED_SIZE_CHANGED: 'embed-size-changed',
   EMBED_SIZE_DENIED: 'embed-size-denied',
   NO_CONTENT: 'no-content',
+  GET_HTML: 'get-html',
+  GET_CONSENT_STATE: 'get-consent-state',
 
   // For the frame to be placed in full overlay mode for lightboxes
   FULL_OVERLAY_FRAME: 'full-overlay-frame',
@@ -78,10 +85,10 @@ export function listen(element, eventType, listener, opt_evtListenerOpts) {
  * @param {string} sentinel
  * @param {JsonObject=} data
  * @param {?string=} rtvVersion
- * @returns {string}
+ * @return {string}
  */
 export function serializeMessage(type, sentinel, data = dict(),
-    rtvVersion = null) {
+  rtvVersion = null) {
   // TODO: consider wrap the data in a "data" field. { type, sentinal, data }
   const message = data;
   message['type'] = type;
@@ -95,7 +102,7 @@ export function serializeMessage(type, sentinel, data = dict(),
  * Returns null if it's not valid AMP message format.
  *
  * @param {*} message
- * @returns {?JsonObject|undefined}
+ * @return {?JsonObject|undefined}
  */
 export function deserializeMessage(message) {
   if (!isAmpMessage(message)) {
@@ -115,7 +122,7 @@ export function deserializeMessage(message) {
 /**
  *  Returns true if message looks like it is an AMP postMessage
  *  @param {*} message
- *  @return {!boolean}
+ *  @return {boolean}
  */
 export function isAmpMessage(message) {
   return (typeof message == 'string' &&

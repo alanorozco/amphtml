@@ -14,9 +14,9 @@
  * limitations under the License.
  */
 
+import {RefreshIntersectionObserverWrapper} from './refresh-intersection-observer-wrapper';
 import {Services} from '../../../src/services';
 import {dev, user} from '../../../src/log';
-import {IntersectionObserverPolyfill} from '../../../src/intersection-observer-polyfill'; // eslint-disable-line max-len
 
 /**
  * - visibilePercentageMin: The percentage of pixels that need to be on screen
@@ -54,7 +54,7 @@ export function getPublisherSpecifiedRefreshInterval(element, win) {
   }
   let metaTag;
   const metaTagContent = ((metaTag = win.document
-        .getElementsByName(METATAG_NAME))
+      .getElementsByName(METATAG_NAME))
       && metaTag[0]
       && metaTag[0].getAttribute('content'));
   if (!metaTagContent) {
@@ -131,7 +131,7 @@ const RefreshLifecycleState = {
  * Each IO is configured to a different threshold, and all elements that
  * share the same visiblePercentageMin will be monitored by the same IO.
  *
- * @const {!Object<string, (!IntersectionObserver|!IntersectionObserverPolyfill)>}
+ * @const {!Object<string, (!IntersectionObserver|!RefreshIntersectionObserverWrapper)>}
  */
 const observers = {};
 
@@ -221,15 +221,17 @@ export class RefreshManager {
    * Returns an IntersectionObserver configured to the given threshold, creating
    * one if one does not yet exist.
    *
-   * @param {(string|number)} threshold
-   * @return {(!IntersectionObserver|!IntersectionObserverPolyfill)}
+   * @param {number} threshold
+   * @return {(!IntersectionObserver|!RefreshIntersectionObserverWrapper)}
    */
   getIntersectionObserverWithThreshold_(threshold) {
-    threshold = String(threshold);
-    return observers[threshold] ||
-        (observers[threshold] = 'IntersectionObserver' in this.win_
-         ? new this.win_['IntersectionObserver'](this.ioCallback_, {threshold})
-         : new IntersectionObserverPolyfill(this.ioCallback_, {threshold}));
+
+    const thresholdString = String(threshold);
+    return observers[thresholdString] ||
+        (observers[thresholdString] = 'IntersectionObserver' in this.win_
+          ? new this.win_['IntersectionObserver'](this.ioCallback_, {threshold})
+          : new RefreshIntersectionObserverWrapper(
+              this.ioCallback_, this.a4a_, {threshold}));
   }
 
   /**
@@ -310,8 +312,7 @@ export class RefreshManager {
     return new Promise(resolve => {
       this.refreshTimeoutId_ = this.timer_.delay(() => {
         this.state_ = RefreshLifecycleState.INITIAL;
-        this.getIntersectionObserverWithThreshold_(
-            this.config_.visiblePercentageMin).unobserve(this.element_);
+        this.unobserve();
         this.a4a_.refresh(() => this.initiateRefreshCycle());
         resolve(true);
       }, /** @type {number} */ (this.refreshInterval_));
@@ -327,11 +328,19 @@ export class RefreshManager {
   convertAndSanitizeConfiguration_(config) {
     dev().assert(config['visiblePercentageMin'] >= 0 &&
         config['visiblePercentageMin'] <= 100,
-        'visiblePercentageMin for refresh must be in the range [0, 100]');
+    'visiblePercentageMin for refresh must be in the range [0, 100]');
     // Convert seconds to milliseconds.
     config['continuousTimeMin'] *= 1000;
     config['visiblePercentageMin'] /= 100;
     return config;
+  }
+
+  /**
+   * Stops the intersection observer from observing the element.
+   */
+  unobserve() {
+    this.getIntersectionObserverWithThreshold_(
+        this.config_.visiblePercentageMin).unobserve(this.element_);
   }
 }
 

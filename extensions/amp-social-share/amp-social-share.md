@@ -73,6 +73,13 @@ Linkedin is one of the pre-configured providers, so you do not need to provide t
 
 Selects a provider type. This is required for both pre-configured and non-configured providers.
 
+##### data-target
+
+Specifies the target in which to open the target. The default is `_blank` for all cases other than email/SMS on iOS, in which case the target is set to `_top`.
+
+Please note that we only suggest using this override for email.
+
+
 ##### data-share-endpoint
 
 This attribute is **required for non-configured providers**.
@@ -91,6 +98,16 @@ The `amp-social-share` component provides [some pre-configured providers](0.1/am
     <th class="col-twenty">Provider</th>
     <th class="col-twenty">Type</th>
     <th>Parameters</th>
+  </tr>
+  <tr>
+    <td><a href="https://developers.google.com/web/updates/2016/10/navigator-share">Web Share API</a> (triggers OS share dialog)</td>
+    <td><code>system</code></td>
+    <td>
+      <ul>
+        <li><code>data-param-text</code>: optional, defaults to: "Current page title"</li>
+        <li><code>data-mode</code>: optional, if set to <code>replace</code>, all other share options are removed.</li>
+      </ul>
+    </td>
   </tr>
   <tr>
     <td>Email</td>
@@ -175,12 +192,12 @@ The `amp-social-share` component provides [some pre-configured providers](0.1/am
     </td>
   </tr>
   <tr>
-    <td><a href="https://developers.google.com/web/updates/2016/10/navigator-share">Web Share API</a> (available in Chrome as an <a href="https://github.com/jpchase/OriginTrials/blob/gh-pages/developer-guide.md">origin trial</a>)</td>
-    <td><code>system</code></td>
+    <td>LINE</td>
+    <td><code>line</code></td>
     <td>
       <ul>
-        <li><code>data-param-text</code>: optional, defaults to: "Current page title"</li>
-        <li><code>data-mode</code>: optional, if set to <code>replace</code>, all other share options are removed.</li>
+        <li><code>data-param-url</code>: optional, defaults to: <code>rel=canonical</code> URL</li>
+        <li><code>data-param-text</code>: optional, defaults to: Current page title</li>
       </ul>
     </td>
   </tr>

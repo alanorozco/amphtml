@@ -15,8 +15,11 @@
  */
 
 import {AmpAdExit} from '../amp-ad-exit';
-import * as sinon from 'sinon';
-import {ANALYTICS_CONFIG} from '../../../amp-analytics/0.1/vendors';
+import {FilterType} from '../filters/filter';
+import {IFRAME_TRANSPORTS} from '../../../amp-analytics/0.1/iframe-transport-vendors';
+import {installPlatformService} from '../../../../src/service/platform-impl';
+import {installTimerService} from '../../../../src/service/timer-impl';
+import {setParentWindow} from '../../../../src/service';
 import {toggleExperiment} from '../../../../src/experiments';
 
 const TEST_3P_VENDOR = '3p-vendor';
@@ -86,6 +89,10 @@ const EXIT_CONFIG = {
         },
       },
     },
+    inactiveElementTest: {
+      'finalUrl': 'http://localhost:8000/simple',
+      'filters': ['unclickableFilter'],
+    },
   },
   filters: {
     'twoSecond': {
@@ -105,6 +112,10 @@ const EXIT_CONFIG = {
       bottom: 30,
       relativeTo: '#ad',
     },
+    unclickableFilter: {
+      type: 'inactiveElement',
+      selector: '#unclickable',
+    },
   },
 };
 
@@ -118,12 +129,13 @@ describes.realWin('amp-ad-exit', {
   let win;
   let element;
 
-  function makeClickEvent(time = 0, x = 0, y = 0) {
+  function makeClickEvent(time = 0, x = 0, y = 0, target = win.document.body) {
     sandbox.clock.tick(time);
     return {
       preventDefault: sandbox.spy(),
       clientX: x,
       clientY: y,
+      target,
     };
   }
 
@@ -148,25 +160,16 @@ describes.realWin('amp-ad-exit', {
     adDiv.style.width = '200px';
     adDiv.style.height = '200px';
     win.document.body.appendChild(adDiv);
-    // TODO(jonkeller): Long-term, test with amp-ad-exit enclosed inside amp-ad,
-    // so we don't have to do this hack.
-    sandbox.stub(AmpAdExit.prototype, 'getAmpAdResourceId_',
-        () => String(Math.round(Math.random() * 10000)));
   }
 
   beforeEach(() => {
-    sandbox = sinon.sandbox.create({useFakeTimers: true});
+    sandbox = sinon.createSandbox({useFakeTimers: true});
     win = env.win;
     toggleExperiment(win, 'amp-ad-exit', true);
     addAdDiv();
-    // TODO(jonkeller): Remove after rebase
-    win.top.document.body.getResourceId = () => '6789';
-    // TEST_3P_VENDOR must be in ANALYTICS_CONFIG *before* makeElementWithConfig
-    ANALYTICS_CONFIG[TEST_3P_VENDOR] = ANALYTICS_CONFIG[TEST_3P_VENDOR] || {
-      transport: {
-        iframe: '/nowhere.html',
-      },
-    };
+    // TEST_3P_VENDOR must be in IFRAME_TRANSPORTS
+    // *before* makeElementWithConfig
+    IFRAME_TRANSPORTS[TEST_3P_VENDOR] = '/nowhere.html';
     return makeElementWithConfig(EXIT_CONFIG).then(el => {
       element = el;
     });
@@ -177,34 +180,34 @@ describes.realWin('amp-ad-exit', {
     env.win.document.body.removeChild(element);
     env.win.document.body.removeChild(env.win.document.getElementById('ad'));
     element = undefined;
+    // Without the following, will break amp-analytics' test-vendor.js
+    delete IFRAME_TRANSPORTS[TEST_3P_VENDOR];
   });
 
   it('should reject non-JSON children', () => {
     const el = win.document.createElement('amp-ad-exit');
     el.appendChild(win.document.createElement('p'));
     win.document.body.appendChild(el);
-    return el.build().then(() => {
-      throw new Error('must have failed');
-    }, error => {
-      expect(error.message).to.match(/application\/json/);
-    });
+    let promise;
+    allowConsoleError(() => promise = el.build());
+    return promise.should.be.rejectedWith(/application\/json/);
   });
 
   it('should do nothing for missing targets', () => {
     const open = sandbox.stub(win, 'open');
     try {
-      element.implementation_.executeAction({
+      allowConsoleError(() => element.implementation_.executeAction({
         method: 'exit',
         args: {target: 'not-a-real-target'},
         event: makeClickEvent(1001),
         satisfiesTrust: () => true,
-      });
+      }));
       expect(open).to.not.have.been.called;
     } catch (expected) {}
   });
 
   it('should stop event propagation', () => {
-    const event = makeClickEvent();
+    const event = makeClickEvent(1001);
     element.implementation_.executeAction({
       method: 'exit',
       args: {target: 'simple'},
@@ -227,15 +230,42 @@ describes.realWin('amp-ad-exit', {
     element.implementation_.executeAction({
       method: 'exit',
       args: {target: 'twoSecondDelay'},
-      event: makeClickEvent(1000),  // 1000 ms + 999 from the previous exit.
+      event: makeClickEvent(1000), // 1000 ms + 999 from the previous exit.
       satisfiesTrust: () => true,
     });
 
     expect(open).to.not.have.been.called;
   });
 
+  it('should use options.startTimingEvent', () => {
+    return makeElementWithConfig({
+      targets: {
+        navStart: {
+          'finalUrl': 'http://localhost:8000/simple',
+          'filters': ['twoSecond'],
+        },
+      },
+      options: {'startTimingEvent': 'navigationStart'},
+      filters: {
+        'twoSecond': {
+          type: 'clickDelay',
+          delay: 2000,
+        },
+      },
+    }).then(el => {
+      expect(el.implementation_.defaultFilters_.length).to.equal(2);
+      let clickFilter = el.implementation_.defaultFilters_[0];
+      expect(clickFilter.spec.type).to.equal(FilterType.CLICK_DELAY);
+      expect(clickFilter.spec.startTimingEvent).to.equal('navigationStart');
+      clickFilter = el.implementation_.userFilters_['twoSecond'];
+      expect(clickFilter).to.be.ok;
+      expect(clickFilter.spec.type).to.equal(FilterType.CLICK_DELAY);
+      expect(clickFilter.spec.startTimingEvent).to.equal('navigationStart');
+    });
+  });
+
   it('should attempt new-tab navigation', () => {
-    const open = sandbox.stub(win, 'open', () => {
+    const open = sandbox.stub(win, 'open').callsFake(() => {
       return {name: 'fakeWin'};
     });
 
@@ -252,7 +282,7 @@ describes.realWin('amp-ad-exit', {
   });
 
   it('should fall back to top navigation', () => {
-    const open = sandbox.stub(win, 'open', () => null);
+    const open = sandbox.stub(win, 'open').callsFake(() => null);
 
     element.implementation_.executeAction({
       method: 'exit',
@@ -269,10 +299,11 @@ describes.realWin('amp-ad-exit', {
   });
 
   it('should ping tracking URLs with sendBeacon', () => {
-    const open = sandbox.stub(win, 'open', () => {
+    const open = sandbox.stub(win, 'open').callsFake(() => {
       return {name: 'fakeWin'};
     });
-    const sendBeacon = sandbox.stub(win.navigator, 'sendBeacon', () => true);
+    const sendBeacon = sandbox.stub(win.navigator, 'sendBeacon').callsFake(
+        () => true);
 
     element.implementation_.executeAction({
       method: 'exit',
@@ -292,13 +323,14 @@ describes.realWin('amp-ad-exit', {
   });
 
   it('should ping tracking URLs with image requests (no sendBeacon)', () => {
-    const open = sandbox.stub(win, 'open', () => {
+    const open = sandbox.stub(win, 'open').callsFake(() => {
       return {name: 'fakeWin'};
     });
 
     let sendBeacon;
     if (win.navigator.sendBeacon) {
-      sendBeacon = sandbox.stub(win.navigator, 'sendBeacon', () => true);
+      sendBeacon = sandbox.stub(win.navigator, 'sendBeacon').callsFake(
+          () => true);
     }
     const createElement = sandbox.spy(win.document, 'createElement');
 
@@ -322,11 +354,12 @@ describes.realWin('amp-ad-exit', {
   });
 
   it('should ping tracking URLs with image requests (sendBeacon fails)', () => {
-    const open = sandbox.stub(win, 'open', () => {
+    const open = sandbox.stub(win, 'open').callsFake(() => {
       return {name: 'fakeWin'};
     });
 
-    const sendBeacon = sandbox.stub(win.navigator, 'sendBeacon', () => false);
+    const sendBeacon = sandbox.stub(win.navigator, 'sendBeacon').callsFake(
+        () => false);
     const createElement = sandbox.spy(win.document, 'createElement');
 
     element.implementation_.executeAction({
@@ -354,11 +387,12 @@ describes.realWin('amp-ad-exit', {
       },
     };
     return makeElementWithConfig(config).then(el => {
-      const open = sandbox.stub(win, 'open', () => {
+      const open = sandbox.stub(win, 'open').callsFake(() => {
         return {name: 'fakeWin'};
       });
 
-      const sendBeacon = sandbox.stub(win.navigator, 'sendBeacon', () => true);
+      const sendBeacon = sandbox.stub(win.navigator, 'sendBeacon').callsFake(
+          () => true);
       const createElement = sandbox.spy(win.document, 'createElement');
 
       el.implementation_.executeAction({
@@ -379,14 +413,15 @@ describes.realWin('amp-ad-exit', {
   });
 
   it('should replace standard URL variables', () => {
-    const open = sandbox.stub(win, 'open', () => {
+    const open = sandbox.stub(win, 'open').callsFake(() => {
       return {name: 'fakeWin'};
     });
 
     if (!win.navigator) {
       win.navigator = {sendBeacon: () => false};
     }
-    const sendBeacon = sandbox.stub(win.navigator, 'sendBeacon', () => true);
+    const sendBeacon = sandbox.stub(win.navigator, 'sendBeacon').callsFake(
+        () => true);
 
     element.implementation_.executeAction({
       method: 'exit',
@@ -406,14 +441,15 @@ describes.realWin('amp-ad-exit', {
   });
 
   it('should replace custom URL variables with vars', () => {
-    const open = sandbox.stub(win, 'open', () => {
+    const open = sandbox.stub(win, 'open').callsFake(() => {
       return {name: 'fakeWin'};
     });
 
     if (!win.navigator) {
       win.navigator = {sendBeacon: () => false};
     }
-    const sendBeacon = sandbox.stub(win.navigator, 'sendBeacon', () => true);
+    const sendBeacon = sandbox.stub(win.navigator, 'sendBeacon').callsFake(
+        () => true);
 
     element.implementation_.executeAction({
       method: 'exit',
@@ -427,14 +463,14 @@ describes.realWin('amp-ad-exit', {
         'http://localhost:8000/vars?foo=foo', '_blank');
     expect(sendBeacon)
         .to.have.been.calledWith(
-        'http://localhost:8000/tracking?bar=bar', '');
+            'http://localhost:8000/tracking?bar=bar', '');
     expect(sendBeacon)
         .to.have.been.calledWith(
-        'http://localhost:8000/tracking?numVar=0&boolVar=false', '');
+            'http://localhost:8000/tracking?numVar=0&boolVar=false', '');
   });
 
   it('border protection', () => {
-    const open = sandbox.stub(win, 'open', () => {
+    const open = sandbox.stub(win, 'open').callsFake(() => {
       return {name: 'fakeWin'};
     });
 
@@ -472,7 +508,8 @@ describes.realWin('amp-ad-exit', {
 
     expect(open).to.not.have.been.called;
 
-    // The click is within the left border but left border protection is not set.
+    // The click is within the left border but left border protection is not
+    // set.
     element.implementation_.executeAction({
       method: 'exit',
       args: {target: 'borderProtection'},
@@ -493,7 +530,7 @@ describes.realWin('amp-ad-exit', {
   });
 
   it('border protection relative to div', () => {
-    const open = sandbox.stub(win, 'open', () => {
+    const open = sandbox.stub(win, 'open').callsFake(() => {
       return {name: 'fakeWin'};
     });
 
@@ -529,7 +566,8 @@ describes.realWin('amp-ad-exit', {
 
     expect(open).to.not.have.been.called;
 
-    // The click is within the left border but left border protection is not set.
+    // The click is within the left border but left border protection is not
+    // set.
     element.implementation_.executeAction({
       method: 'exit',
       args: {target: 'borderProtectionRelativeTo'},
@@ -549,6 +587,39 @@ describes.realWin('amp-ad-exit', {
         EXIT_CONFIG.targets.borderProtection.finalUrl, '_blank');
   });
 
+  it('should not trigger for amp-carousel buttons', () => {
+    const open = sandbox.stub(win, 'open');
+    const fakeCarouselButton = document.createElement('div');
+    fakeCarouselButton.classList.add('amp-carousel-button');
+    element.implementation_.executeAction({
+      method: 'exit',
+      args: {target: 'simple'},
+      event: makeClickEvent(1001, 200, 300, fakeCarouselButton),
+      satisfiesTrust: () => true,
+    });
+    expect(open).to.not.have.been.called;
+  });
+
+  it('should not trigger for elements matching InactiveElementFilter', () => {
+    const open = sandbox.stub(win, 'open');
+    const unclickable = document.createElement('span');
+    unclickable.id = 'unclickable';
+    element.implementation_.executeAction({
+      method: 'exit',
+      args: {target: 'inactiveElementTest'},
+      event: makeClickEvent(1001, 200, 300, unclickable),
+      satisfiesTrust: () => true,
+    });
+    expect(open).to.not.have.been.called;
+    element.implementation_.executeAction({
+      method: 'exit',
+      args: {target: 'inactiveElementTest'},
+      event: makeClickEvent(1001, 200, 300, win.document.body),
+      satisfiesTrust: () => true,
+    });
+    expect(open).to.have.been.called;
+  });
+
   it('should replace custom URL variables with 3P Analytics defaults', () => {
     const open = sandbox.stub(win, 'open').returns({name: 'fakeWin'});
 
@@ -564,7 +635,7 @@ describes.realWin('amp-ad-exit', {
   });
 
   it('should replace custom URL variables with 3P Analytics signals', () => {
-    const open = sandbox.stub(win, 'open', () => {
+    const open = sandbox.stub(win, 'open').callsFake(() => {
       return {name: 'fakeWin'};
     });
 
@@ -592,5 +663,23 @@ describes.realWin('amp-ad-exit', {
     expect(makeElementWithConfig(unkVendor))
         .to.eventually.be.rejectedWith(/Unknown vendor/);
   });
-});
 
+  it('getAmpAdResourceId_ should reference AMP top window', () => {
+    const frame = win.document.createElement('iframe');
+    win.document.body.appendChild(frame);
+    const doc = frame.contentDocument;
+    const ampAd = doc.createElement('amp-ad');
+    ampAd.getResourceId = () => 12345;
+    doc.body.appendChild(ampAd);
+    const adFrame = doc.createElement('iframe');
+    ampAd.appendChild(adFrame);
+    const ampAdExitElement =
+        adFrame.contentDocument.createElement('amp-ad-exit');
+    adFrame.contentDocument.body.appendChild(ampAdExitElement);
+    installTimerService(frame.contentWindow);
+    installPlatformService(frame.contentWindow);
+    setParentWindow(adFrame.contentWindow, frame.contentWindow);
+    expect(new AmpAdExit(ampAdExitElement).getAmpAdResourceId_())
+        .to.equal('12345');
+  });
+});

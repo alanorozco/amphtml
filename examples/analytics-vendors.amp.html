@@ -52,6 +52,7 @@
       <option>afsanalytics</option>
       <option>baiduanalytics</option>
       <option>burt</option>
+      <option>byside</option>
       <option>chartbeat</option>
       <option>clicky</option>
       <option>colanalytics</option>
@@ -67,9 +68,11 @@
       <option>krux</option>
       <option>linkpulse</option>
       <option>lotame</option>
+      <option>marinsoftware</option>
       <option>mediametrie</option>
-      <option>mediarithmics</option>            
+      <option>mediarithmics</option>
       <option>mediator</option>
+      <option>mobify</option>
       <option>mparticle</option>
       <option>mpulse</option>
       <option>newrelic</option>
@@ -77,8 +80,10 @@
       <option>nielsen-marketing-cloud</option>
       <option>oewa</option>
       <option>oewadirect</option>
+      <option>oracleInfinityAnalytics</option>
       <option>parsely</option>
       <option>piano</option>
+      <option>piStats</option>
       <option>quantcast</option>
       <option>rakam</option>
       <option>segment</option>
@@ -87,7 +92,10 @@
       <option>snowplow</option>
       <option>top100</option>
       <option>topmailru</option>
+      <option>umenganalytics</option>
+      <option>treasuredata</option>
       <option>webtrekk</option>
+      <option>webtrekk_v2</option>
     </select>
     <input type="submit" value="Go">
   </form>
@@ -274,6 +282,32 @@ For complete documentation and additional examples please see: https://marketing
   </script>
 </amp-analytics>
 <!-- End Burt example -->
+
+<!-- BySide tracking -->
+<amp-analytics type="byside" id="byside">
+  <script type="application/json">
+    {
+      "vars": {
+        "webcareId": "D6604AE5D0",
+        "channel": "",
+        "lang": "pt"
+      },
+      "triggers": {
+        "trackEvent": {
+          "on": "click",
+          "selector": "#test1",
+          "request": "event",
+          "vars": {
+            "eventId": "shop",
+            "eventLabel": "Clicked on shop button",
+            "fields": "{\"product\": \"the_essentials\", \"name\": \"The essentials\"}"
+          }
+        }
+      }
+    }
+  </script>
+</amp-analytics>
+<!-- End BySide example -->
 
 <!-- Chartbeat tracking -->
 <amp-analytics type="chartbeat" id="chartbeat">
@@ -499,7 +533,8 @@ For complete documentation and additional examples please see: https://marketing
   "vars": {
     "st":  "angebotskennung",
     "co":  "comment",
-    "cp":  "code"
+    "cp":  "code",
+    "ps":  "lin"
   },
   "requests": {
     "url":  "https://3p.ampproject.net/custom/amp-analytics-infonline.html"
@@ -558,6 +593,43 @@ For complete documentation and additional examples please see: https://marketing
 </amp-analytics>
 <!-- End Lotame example -->
 
+<!-- Marin Software tracking.
+  Configure tracker id (required)
+  Configure anonymizeIp to "set" if ip should be anonymized (optional)
+-->
+<amp-analytics type="marinsoftware" id="marinsoftware">
+<script type="application/json">
+  {
+    "vars": {
+      "trackerId": "123"
+    },
+    "triggers": {
+      "trackPageview": {
+        "on": "visible",
+        "request": "pageView"
+      },
+      "trackConversion": {
+        "on": "click",
+        "selector": "#test1",
+        "request": "conversion",
+        "vars": {
+          "orderId": "orderId",
+          "marinConversionType": "marinConversionType",
+          "productName": "productName",
+          "category": "category",
+          "price": "price",
+          "quantity": "quantity"
+        }
+      }
+    },
+    "extraUrlParams": {
+      "anonymizeIp": "set"
+    }
+  }
+</script>
+</amp-analytics>
+<!-- End Marin Software tracking -->
+
 <!-- Mediametrie tracking
   serial is the account id (required)
   level1 to 4 are page levels (optional)
@@ -588,7 +660,7 @@ For complete documentation and additional examples please see: https://marketing
       "vars": {
         "site_token": "amp-test17",
         "event_name": "amp-test-pageview"
-      }, 
+      },
       "extraUrlParams": {
         "prop1": "value1",
         "prop2": "value2"
@@ -609,6 +681,19 @@ For complete documentation and additional examples please see: https://marketing
 </script>
 </amp-analytics>
 <!-- End Mediator.media example -->
+
+<!-- Mobify tracking -->
+<amp-analytics type="mobify" id="mobify">
+<script type="application/json">
+  {
+    "vars": {
+      "projectSlug": "merlins",
+      "templateName": "pdp"
+    }
+  }
+</script>
+</amp-analytics>
+<!-- End Mobify example -->
 
 <!-- mParticle tracking
   Ensure you replace AppKey with your Application key
@@ -739,13 +824,58 @@ For complete documentation and additional examples please see: https://marketing
 </script>
 </amp-analytics>
 <!-- End OEWADIRECT example -->
-
+<!-- Oracle Infinity Analytics example -->
+<amp-analytics type="oracleInfinityAnalytics" id="oracleInfinity" class="i-amphtml-element i-amphtml-layout-fixed i-amphtml-layout-size-defined" style="width: 1px; height: 1px;" aria-hidden="true">
+  <script type="application/json">
+{
+  "vars": {
+    "guid": "_amp_test_guid_"
+  },
+  "triggers": {
+    "clickOnTest1Trigger": {
+      "on": "click",
+      "selector": "#test1",
+      "request": "event",
+      "vars": {
+        "dl": "99",
+        "ti": "clicked-test1"
+      }
+    },
+    "clickOnTopTrigger": {
+      "on": "click",
+      "selector": "#top",
+      "request": "event",
+      "vars": {
+        "dl": "99",
+        "ti": "clicked-header"
+      }
+    }
+  }
+}
+</script>
+</amp-analytics>
+<!-- end Oracle Infinity Analytics example -->
 <!-- Parsely tracking -->
 <amp-analytics type="parsely" id="parsely">
 <script type="application/json">
 {
   "vars": {
     "apikey": "example.com"
+  },
+  "triggers": {
+      "defaultPageview": {
+          "on": "visible",
+          "request": "pageview"
+      },
+      "defaultHeartbeat": {
+         "on": "timer",
+         "enabled": "${incrementalEngagedTime(parsely-js,false)}",
+         "timerSpec": {
+             "interval": 10,
+             "maxTimerLength": 7200
+         },
+         "request": "heartbeat"
+      }
   }
 }
 </script>
@@ -772,6 +902,20 @@ For complete documentation and additional examples please see: https://marketing
 </script>
 </amp-analytics>
 <!-- End Piano example -->
+
+<!-- piStats example tracking -->
+<amp-analytics type="piStats" id="piStats">
+  <script type="application/json">
+    {
+      "vars": {
+        "property": "APB",
+        "cntId": "678543",
+        "language": "english"
+      }
+    }
+  </script>
+</amp-analytics>
+<!-- End piStats example -->
 
 <!-- Quantcast tracking -->
 <amp-analytics type="quantcast" id="quantcast">
@@ -922,6 +1066,44 @@ For complete documentation and additional examples please see: https://marketing
 </amp-analytics>
 <!-- End SOASTA mPulse example -->
 
+<!-- Treasure Data example -->
+<amp-analytics type="treasuredata" id="treasuredata">
+<script type="application/json">
+  {
+    "vars": {
+      "host": "in.treasuredata.com",
+      "writeKey": "1/deadbeaf",
+      "database": "testdb"
+    },
+    "triggers": {
+      "trackPageview": {
+        "on": "visible",
+        "request": "pageview",
+        "vars": {
+          "table": "pageviews"
+        },
+        "extraUrlParams": {
+          "foo": "123"
+        }
+      },
+      "trackClick": {
+        "on": "click",
+        "request": "event",
+        "selector": "#test1",
+        "vars": {
+          "table": "events"
+        },
+        "extraUrlParams": {
+          "type": "click",
+          "bar": 789
+        }
+      }
+    }
+  }
+</script>
+</amp-analytics>
+<!-- End Treasure Data example -->
+
 <!-- Webtrekk tracking -->
 <amp-analytics type="webtrekk" id="webtrekk">
 <script type="application/json">
@@ -941,6 +1123,25 @@ For complete documentation and additional examples please see: https://marketing
 </script>
 </amp-analytics>
 <!-- End Webtrekk example -->
+
+<!-- Webtrekk_v2 tracking -->
+<amp-analytics type="webtrekk_v2" id="webtrekk_v2">
+  <script type="application/json">
+    {
+      "vars": {
+        "trackDomain": "analytics.webtrekk.net",
+        "trackId": "111111111111111"
+      },
+      "triggers": {
+        "trackPageview": {
+          "on": "visible",
+          "request": "pageview"
+        }
+      }
+    }
+  </script>
+</amp-analytics>
+<!-- End Webtrekk_v2 example -->
 
 <!-- Rakam tracking -->
 <amp-analytics type="rakam" id="rakam">
@@ -980,6 +1181,27 @@ For complete documentation and additional examples please see: https://marketing
 </amp-analytics>
 <!-- End Ibeat Analytics example -->
 
+<!-- Umeng+ Analytics Example -->
+<amp-analytics type="umenganalytics" id="umenganalytics">
+  <script type="application/json">
+    {
+      "vars": {
+        "siteid": "123456789"
+      },
+      "triggers": {
+        "event": {
+          "on": "click",
+          "selector": "#test1",
+          "request": "event",
+          "vars": {
+            "eventName": "login"
+          }
+        }
+      }
+    }
+  </script>
+</amp-analytics>
+<!-- End Umeng Analytics example -->
 </div>
 
 <div class="logo"></div>

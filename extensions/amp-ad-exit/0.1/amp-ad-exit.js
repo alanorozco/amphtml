@@ -14,22 +14,26 @@
  * limitations under the License.
  */
 
-import {makeClickDelaySpec} from './filters/click-delay';
-import {assertConfig, assertVendor, TransportMode} from './config';
-import {createFilter} from './filters/factory';
-import {isJsonScriptTag, openWindowDialog} from '../../../src/dom';
-import {getAmpAdResourceId} from '../../../src/ad-helper';
-import {Services} from '../../../src/services';
-import {getMode} from '../../../src/mode';
-import {user, dev} from '../../../src/log';
-import {parseJson} from '../../../src/json';
-import {parseUrl} from '../../../src/url';
+import {FilterType} from './filters/filter';
 import {
-  listen,
-  deserializeMessage,
   MessageType,
+  deserializeMessage,
+  listen,
 } from '../../../src/3p-frame-messaging';
+import {Services} from '../../../src/services';
+import {TransportMode, assertConfig, assertVendor} from './config';
+import {createFilter} from './filters/factory';
+import {dev, user} from '../../../src/log';
+import {getAmpAdResourceId} from '../../../src/ad-helper';
 import {getData} from '../../../src/event-helper';
+import {getMode} from '../../../src/mode';
+import {getTopWindow} from '../../../src/service';
+import {isJsonScriptTag, openWindowDialog} from '../../../src/dom';
+import {isObject} from '../../../src/types';
+import {makeClickDelaySpec} from './filters/click-delay';
+import {makeInactiveElementSpec} from './filters/inactive-element';
+import {parseJson} from '../../../src/json';
+import {parseUrlDeprecated} from '../../../src/url';
 const TAG = 'amp-ad-exit';
 
 /**
@@ -87,12 +91,15 @@ export class AmpAdExit extends AMP.BaseElement {
   exit({args, event}) {
     const target = this.targets_[args['target']];
     user().assert(target, `Exit target not found: '${args['target']}'`);
+    user().assert(event, 'Unexpected null event');
+    event = /** @type {!../../../src/service/action-impl.ActionEventDef} */(
+      event);
 
-    event.preventDefault();
     if (!this.filter_(this.defaultFilters_, event) ||
         !this.filter_(target.filters, event)) {
       return;
     }
+    event.preventDefault();
     const substituteVariables =
         this.getUrlVariableRewriter_(args, event, target);
     if (target.trackingUrls) {
@@ -126,7 +133,7 @@ export class AmpAdExit extends AMP.BaseElement {
           continue;
         }
         const customVar =
-            /** @type {!./config.VariableDef} */ (target.vars[customVarName]);
+        /** @type {!./config.VariableDef} */ (target.vars[customVarName]);
         if (!customVar) {
           continue;
         }
@@ -181,7 +188,7 @@ export class AmpAdExit extends AMP.BaseElement {
           // Either it's not a 3p analytics variable, or it is one
           // but no matching response has been received yet.
           return (customVarName in args) ?
-              args[customVarName] : customVar.defaultValue;
+            args[customVarName] : customVar.defaultValue;
         };
         whitelist[customVarName] = true;
       }
@@ -217,7 +224,7 @@ export class AmpAdExit extends AMP.BaseElement {
    * passes.
    * @param {!Array<!./filters/filter.Filter>} filters
    * @param {!../../../src/service/action-impl.ActionEventDef} event
-   * @returns {boolean}
+   * @return {boolean}
    */
   filter_(filters, event) {
     return filters.every(filter => {
@@ -231,10 +238,14 @@ export class AmpAdExit extends AMP.BaseElement {
   buildCallback() {
     this.element.setAttribute('aria-hidden', 'true');
 
+    // Note that order is expected as part of applying default filter options.
     this.defaultFilters_.push(
         createFilter('minDelay', makeClickDelaySpec(1000), this));
+    this.defaultFilters_.push(
+        createFilter('carouselBtns',
+            makeInactiveElementSpec('.amp-carousel-button'), this));
 
-    const children = this.element.children;
+    const {children} = this.element;
     user().assert(children.length == 1,
         'The tag should contain exactly one <script> child.');
     const child = children[0];
@@ -244,9 +255,20 @@ export class AmpAdExit extends AMP.BaseElement {
         'be inside a <script> tag with type="application/json"');
     try {
       const config = assertConfig(parseJson(child.textContent));
+      let defaultClickStartTimingEvent;
+      if (isObject(config.options) &&
+          typeof config.options.startTimingEvent === 'string') {
+        defaultClickStartTimingEvent = config.options.startTimingEvent;
+        this.defaultFilters_.splice(0, 1, createFilter('minDelay',
+            makeClickDelaySpec(1000, config.options.startTimingEvent), this));
+      }
       for (const name in config.filters) {
-        this.userFilters_[name] =
-            createFilter(name, config.filters[name], this);
+        const spec = config.filters[name];
+        if (spec.type == FilterType.CLICK_DELAY) {
+          spec.startTimingEvent =
+              spec.startTimingEvent || defaultClickStartTimingEvent;
+        }
+        this.userFilters_[name] = createFilter(name, spec, this);
       }
       for (const name in config.targets) {
         const target = config.targets[name];
@@ -269,7 +291,7 @@ export class AmpAdExit extends AMP.BaseElement {
             continue;
           }
           const vendor = matches[1];
-          const origin = parseUrl(assertVendor(vendor)).origin;
+          const {origin} = parseUrlDeprecated(assertVendor(vendor));
           this.expectedOriginToVendor_[origin] =
               this.expectedOriginToVendor_[origin] || vendor;
         }
@@ -289,12 +311,11 @@ export class AmpAdExit extends AMP.BaseElement {
    * This is a pass-through for the version in service.js, solely because
    * the one in service.js isn't stubbable for testing, since only object
    * methods are stubbable.
-   * @returns {?string}
+   * @return {?string}
    * @private
-   * @VisibleForTesting
    */
   getAmpAdResourceId_() {
-    return getAmpAdResourceId(this.element, this.win.top);
+    return getAmpAdResourceId(this.element, getTopWindow(this.win));
   }
 
   /** @override */
@@ -371,7 +392,8 @@ export class AmpAdExit extends AMP.BaseElement {
     user().assert(responseMessage['vendor'],
         'Received malformed message from 3p analytics frame: ' +
         'vendor missing');
-    const vendorURL = parseUrl(assertVendor(responseMessage['vendor']));
+    const vendorURL = parseUrlDeprecated(assertVendor(
+        responseMessage['vendor']));
     user().assert(vendorURL && vendorURL.origin == eventOrigin,
         'Invalid origin for vendor ' +
         `${responseMessage['vendor']}: ${eventOrigin}`);

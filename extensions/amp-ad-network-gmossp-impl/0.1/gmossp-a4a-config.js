@@ -25,8 +25,8 @@ const GMOSSP_SRC_A4A_PREFIX_ = 'https://amp.sp.gmossp-sp.jp/_a4a/';
 /**
  * @param {!Window} win
  * @param {!Element} element
- * @param {!boolean} useRemoteHtml
- * @returns {boolean}
+ * @param {boolean} useRemoteHtml
+ * @return {boolean}
  */
 export function gmosspIsA4AEnabled(win, element, useRemoteHtml) {
   let src;
