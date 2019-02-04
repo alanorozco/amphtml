@@ -20,10 +20,11 @@ const {html} = require('./html');
 const {KeyValueOptions} = require('./form');
 
 
-module.exports = () => html`<div class="block">
+module.exports = ({label} = {label: 'Load URL by Proxy'}) => html`
+  <div class="block">
     <form id="proxy-form" action="/proxy" target="_top">
       <label for="proxy-input">
-        <span>Load URL by Proxy</span>
+        ${label ? html`<span>${label}</span>` : ''}
         <select name="mode">
           ${KeyValueOptions(documentModes)}
         </select>

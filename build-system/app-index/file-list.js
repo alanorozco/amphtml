@@ -143,7 +143,7 @@ const FileList = ({basepath, fileSet, selectModePrefix}) =>
       items="."
       layout="fixed-height"
       width="auto"
-      height="568px"
+      height="100vh"
       class="file-list custom-loader">
 
       <div fallback>Failed to load data.</div>

@@ -38,4 +38,7 @@ const html = (strings, ...values) =>
   joinFragments(strings, (string, i) => string + (values[i] || ''));
 
 
-module.exports = {html, joinFragments};
+const htmlOptional = (condition, content) => condition ? content : '';
+
+
+module.exports = {html, htmlOptional, joinFragments};
