@@ -27,14 +27,17 @@
 }
 body {
   font-family: -apple-system, system-ui, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-  font-size: 14px;
-  line-height: 20px;
+  font-size: 16px;
+  line-height: 22px;
 }
 header,
-h3,
+h1,
 h2,
+h3,
+h4,
 .file-list-search,
-.proxy-form-label-inner {
+.proxy-form-label-inner,
+.sidebar-links {
   font-family: Poppins, sans-serif;
 }
 code,
@@ -99,9 +102,14 @@ body > footer {
 .wrap {
   position: relative;
   display: block;
-  max-width: 960px;
+  max-width: 1200px;
   padding: 0 40px;
   margin: 0 auto;
+}
+@media (max-width: 600px) {
+  .wrap {
+    padding: 0 20px;
+  }
 }
 .block {
   margin: 40px auto;
@@ -125,7 +133,7 @@ body > footer {
 }
 .file-list-container,
 .settings-modal-content {
-  background: linear-gradient(30deg, #fff calc(100% - 600px), #ebebf0 100%);
+  background: #fafafc;
 }
 h3 {
   padding: 40px 0;
@@ -145,13 +153,13 @@ h3 {
   background: #fff;
   position: absolute;
   right: 40px;
-  top: 30px;
+  top: 20px;
   border-radius: 6px;
 }
 
 #header-sidebar {
-  min-width: 240px;
   width: 80vw;
+  min-width: 280px;
   display: flex;
   flex-direction: column;
 }
@@ -172,7 +180,8 @@ h3 {
 #header-sidebar amp-accordion > section > h3 {
   background: none;
   border: none;
-  padding: 20px 40px;
+  font-size: 16px;
+  padding: 16px 30px;
 }
 
 #header-sidebar amp-accordion > section > h3:focus {
@@ -180,7 +189,12 @@ h3 {
 }
 
 #header-sidebar amp-accordion > section > div {
-  padding: 20px 40px; /* same as corresponding h2 */
+  padding: 16px 30px; /* same as corresponding h2 */
+}
+
+#header-sidebar .proxy-form-sidebar-container {
+  padding-top: 0;
+  padding-bottom: 30px;
 }
 
 amp-accordion > section > div > .block {
@@ -211,7 +225,7 @@ amp-sidebar > .close .icon-button {
 }
 
 .icon-button:active {
-  background: #aac9ff;
+  background: #bcd5ff;
   color: black;
 }
 
@@ -224,29 +238,25 @@ amp-sidebar > .close > a {
   display: flex;
   flex-direction: column;
   list-style: none;
-  font-size: 18px;
-  margin: 0;
+  font-size: 16px;
+  margin: -10px 0 16px;
   padding: 0;
 }
 
 .sidebar-links > li {
-  padding: 20px 40px; /* same as sidebar's accordion's heading */
+  padding: 16px 30px; /* same as sidebar's accordion's heading */
 }
 
 .sidebar-links > li > a {
   display: block;
   /* reset and reapply parent's margin to cover its tappable area */
-  margin: -20px -40px;
-  padding: 20px 40px;
+  margin: -16px -30px;
+  padding: 16px 30px;
 }
 
-header .settings-cog-icon,
-.settings-modal-header .close-icon {
-  cursor: pointer;
-}
 .settings-modal-header {
   background: rgba(255, 255, 255, 0.4);
-  height: 130px;
+  height: 62px; /* same as top-level header */
 }
 #settings-modal h3 {
   padding: 20px 0 0;
@@ -272,7 +282,7 @@ header .settings-cog-icon,
   margin: 10px 0 0;
 }
 .selector-block[option][selected] {
-  background-color: #aac9ff;
+  background-color: #bcd5ff;
   outline: none;
 }
 .selector-block[option][selected] > .check-icon {
@@ -316,7 +326,7 @@ a.underlined {
 }
 
 #examples-mode-select {
-  margin: 0 20px 0 10px;
+  margin: 0 0 0 10px;
 }
 .center {
   text-align: center;
@@ -338,6 +348,58 @@ a.underlined {
   outline: none;
 }
 
+.listing-shortcuts {
+  list-style: none;
+  display: flex;
+  font-weight: bold;
+  margin-top: 20px;
+}
+
+.listing-shortcuts > li {
+  margin: 0 40px 2px 0;
+  position: relative;
+}
+
+.listing-shortcuts > .active::after {
+  content: " ";
+  height: 2px;
+  position: absolute;
+  bottom: -2px;
+  left: -6px;
+  right: -6px;
+  background: #005af0;
+}
+
+.listing-shortcuts > li > a {
+  display: block;
+  padding: 20px 0;
+  color: #000;
+}
+
+.listing-shortcuts > li > a > span {
+  font-weight: normal;
+  color: #888;
+  margin-left: 6px;
+}
+
+.listing-shortcuts > .active > a,
+.listing-shortcuts > .active > a > span {
+  color: #005af0;
+}
+
+@media (max-width: 380px) {
+  .listing-shortcuts {
+    font-size: 13px;
+  }
+  .listing-shortcuts > li {
+    margin-right: 24px;
+  }
+  .listing-shortcuts > li > a {
+    display: block;
+    padding: 16px 0;
+  }
+}
+
 /* offsets list header for correct scroll position tricking element.scrollTo */
 #file-list-scroll-sentinel {
   position: absolute;
@@ -352,8 +414,27 @@ a.underlined {
   flex-wrap: wrap;
   justify-content: end;
   align-items: center;
-  padding-top: 30px;
-  padding-bottom: 30px;
+  padding-top: 20px;
+  margin-bottom: 40px;
+  position: sticky;
+  top: 62px; /* same as top-level header height */
+  z-index: 99; /* one below top-level header */
+}
+
+.file-list-heading::before {
+  background: linear-gradient(to bottom, rgba(250, 250, 252, 1) 0%, rgba(250, 250, 252, 1) 65%, rgba(255, 255, 255, 0) 100%);
+  position: absolute;
+  z-index: 0;
+  pointer-events: none;
+  content: " ";
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 100px;
+}
+
+.file-list-heading > * {
+  z-index: 1;
 }
 
 .file-list-heading #basepath {
@@ -366,8 +447,8 @@ a.underlined {
 
 .file-list-search {
   flex: 1;
-  font-size: 18px;
-  padding: 4px 0;
+  font-size: 18px; /* same as .file-list-heading */
+  padding: 6px 0;
   font-weight: normal;
   border: none;
   border-bottom: solid #ddd 1px;
@@ -394,9 +475,8 @@ a.underlined {
   margin: 0;
   display: flex;
   flex-wrap: wrap;
-  justify-content: flex-start;
-  align-items: flex-start;
   min-height: initial;
+  justify-content: space-between;
 }
 
 .file-list .list-overflow[overflow] {
@@ -406,17 +486,27 @@ a.underlined {
   right: 0;
 }
 
-.file-list .file-link-container {
-  margin-bottom: 10px;
-  margin-right: 20px;
-  height: 20px;
+.file-link-container {
+  margin-bottom: 12px;
+  /* three columns */
+  width: 31%;
+}
+@media (max-width: 900px) {
+  .file-link-container {
+    /* two columns */
+    width: 45%;
+  }
+}
+@media (max-width: 600px) {
+  .file-link-container {
+    /* one column */
+    width: 100%;
+  }
 }
 
 .file-list .file-link {
   padding: 0;
   margin: 0;
-  display: inline-block;
-  width: 300px;
   display: block;
   text-overflow: ellipsis;
   overflow: hidden;
@@ -438,6 +528,10 @@ a.underlined {
 }
 header {
   display: flex;
+  align-items: center;
+}
+header .settings-cog-icon {
+  background: #000;
 }
 .header-sticky {
   background: #fff;
@@ -446,13 +540,9 @@ header {
   z-index: 100;
   box-shadow: 0 2px 10px 0 rgba(0, 0, 0, .07);
 }
-.file-list-heading {
-  top: 86px;
-  z-index: 99;
-}
 .right-of-logo {
   flex: 1;
-  margin: 30px 0 0 40px;
+  margin-left: 40px;
 }
 header > ul {
   display: flex;
@@ -462,8 +552,7 @@ header > ul {
 }
 header > ul > li {
   display: flex;
-  margin: 20px 0 0; /* no bottom margin to prevent height affecting pos. */
-  height: 20px; /* same as line-height */
+  height: 22px; /* same as line-height */
   padding: 0 0 0 20px;
   font-weight: bold;
 }
@@ -477,32 +566,11 @@ header > ul > li > a:hover {
   color: #005af0;
 }
 header .burger {
+  position: absolute;
+  right: 8px;
+  top: 8px;
   padding: 0;
-  display: inline-block;
   font-size: 20px; /* arbitrary so "☰" looks good */
-  margin: 9px -30px 0 0; /* no bottom margin to prevent height affecting pos. */
-  cursor: pointer;
-}
-
-@media (max-width: 900px) {
-  .file-list-right-section {
-    width: 100%;
-    margin-top: 15px;
-    margin-bottom: 0px;
-  }
-}
-@media (max-width: 600px) {
-  #proxy-form > label > span {
-    display: block;
-    padding-right: 0;
-    flex: 0 0 100%;
-    margin-bottom: 20px;
-    display: flex;
-  }
-  .file-list .file-link {
-    display: block;
-    width: 100%;
-  }
 }
 
 @media (min-width: 801px) {

@@ -57,7 +57,7 @@ const FileListSearchInput = ({basepath}) =>
 
 const ExamplesDocumentModeSelect = () => html`
   <label for="examples-mode-select">
-    Document mode:
+    <span class="show-on-large">Document mode:</span>
     <select id="examples-mode-select"
         on="change:AMP.setState({
           ${selectModeStateId}: {
@@ -119,7 +119,6 @@ const FileListHeading = ({basepath, selectModePrefix}) => html`
         [selectModeStateKey]: selectModePrefix,
       })}
       ${ExamplesSelectModeOptional({basepath, selectModePrefix})}
-      <a href="/~" class="underlined">List root directory</a>
     </div>
   </div>`;
 

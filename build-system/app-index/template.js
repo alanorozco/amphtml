@@ -28,6 +28,13 @@ const {html, htmlOptional, joinFragments} = require('./html');
 const {SettingsModal, SettingsOpenButton} = require('./settings');
 
 
+const listingShortcuts = [
+  {href: '/~', basepath: '/', name: html`/ <span>root</span>`},
+  {href: '/', basepath: '/examples/'},
+  {href: '/test/manual/'},
+];
+
+
 const builtWithLove =
   html`Built with ♡ by <a href="https://ampproject.org">the AMP Project</a>`;
 
@@ -66,7 +73,7 @@ const Header = ({isMainPage, links}) =>
           name,
           href,
         }))}
-      <li>${SettingsOpenButton()}</li>
+      <li class="icon-button">${SettingsOpenButton()}</li>
     </ul>
   </header>`;
 
@@ -135,6 +142,19 @@ const LinkRelPreloadFont = href =>
   html`<link rel="preload" href="${href}" as="font" crossorigin>`;
 
 
+const ListingShortcut = ({href, name, basepath}, opt_current) =>
+  html`<li class="${htmlOptional((basepath || href) == opt_current, 'active')}">
+    <a href="${href}">${name || basepath || href}</a>
+  </li>`;
+
+
+const ListingShortcuts = ({listingShortcuts, current}) =>
+  html`<ul class="listing-shortcuts wrap">
+    ${joinFragments(listingShortcuts, shortcut =>
+        ListingShortcut(shortcut, current))}
+  </ul>`;
+
+
 function renderTemplate({
   basepath, css, isMainPage, fileSet, serveMode, selectModePrefix}) {
 
@@ -156,7 +176,11 @@ function renderTemplate({
     </div>`,
 
     htmlOptional(isMainPage,
-        html`<div class="wrap show-on-large">${ProxyForm()}</div>`),
+        html`<div class="wrap show-on-large proxy-form-wrap">
+          ${ProxyForm()}
+        </div>`),
+
+    ListingShortcuts({listingShortcuts, current: basepath}),
 
     FileList({basepath, selectModePrefix, fileSet}),
 
