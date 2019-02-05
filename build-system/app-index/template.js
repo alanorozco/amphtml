@@ -125,41 +125,42 @@ const HeaderBackToMainLink = () => html`
     <a href="/" class="show-on-large">← Back to main</a>`;
 
 
-const renderTemplate = ({
-  basepath,
-  css,
-  isMainPage,
-  fileSet,
-  serveMode,
-  selectModePrefix}) =>
-  addRequiredExtensionsToHead(AmpDoc({
-    canonical: basepath,
-    css,
-    body: joinFragments([
-      html`<div class="wrap">
-        ${Header({isMainPage, links: headerLinks})}
-        ${htmlOptional(isMainPage,
-            html`<div class="show-on-large">${ProxyForm()}</div>`)}
-      </div>`,
+const SvgDefs = symbols => html`
+  <svg style="position: absolute; width: 0; height: 0; overflow: hidden;" version="1.1" xmlns="http://www.w3.org/2000/svg"
+      xmlns:xlink="http://www.w3.org/1999/xlink">
+    <defs>
+      ${joinFragments(symbols)}
+    </defs>
+  </svg>`;
 
-      HeaderFallbackSidebar({isMainPage, links: headerLinks}),
 
-      FileList({basepath, selectModePrefix, fileSet}),
+function renderTemplate({
+  basepath, css, isMainPage, fileSet, serveMode, selectModePrefix}) {
 
-      html`<footer class="center show-on-large">
-        ${builtWithLove}
-      </footer>`,
+  const body = joinFragments([
+    SvgDefs([ampLogoSymbol]),
 
-      SettingsModal({serveMode}),
+    html`<div class="wrap">
+      ${Header({isMainPage, links: headerLinks})}
+      ${htmlOptional(isMainPage, ProxyForm())}
+    </div>`,
 
-      html`<svg style="position: absolute; width: 0; height: 0; overflow: hidden;" version="1.1" xmlns="http://www.w3.org/2000/svg"
-        xmlns:xlink="http://www.w3.org/1999/xlink">
-        <defs>
-          ${ampLogoSymbol}
-        </defs>
-      </svg>`,
-    ]),
-  }));
+    HeaderFallbackSidebar({isMainPage, links: headerLinks}),
+
+    FileList({basepath, selectModePrefix, fileSet}),
+
+    html`<div class="center">
+      Built with 💙  by
+      <a href="https://ampproject.org" class="underlined">the AMP Project</a>.
+    </div>`,
+
+    SettingsModal({serveMode}),
+  ]);
+
+  const docWithoutExtensions = AmpDoc({canonical: basepath, css, body});
+
+  return addRequiredExtensionsToHead(docWithoutExtensions);
+}
 
 
 module.exports = {renderTemplate};
