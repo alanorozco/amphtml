@@ -338,6 +338,15 @@ a.underlined {
   outline: none;
 }
 
+/* offsets list header for correct scroll position tricking element.scrollTo */
+#file-list-scroll-sentinel {
+  position: absolute;
+  pointer-events: none;
+  width: 1px; /* non-zero */
+  height: 62px; /* same as top-level header's height */
+  top: -62px; /* negative of top-level header's height */
+}
+
 .file-list-heading {
   display: flex;
   flex-wrap: wrap;

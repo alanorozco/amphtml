@@ -38,19 +38,21 @@ const endpointStateKey = 'src';
 const endpointKey = ampStateKey(endpointStateId, endpointStateKey);
 
 
-const FileListSearchInput = ({basepath}) => html`
-  <input type="text"
+const FileListSearchInput = ({basepath}) =>
+  // TODO(alanorozco): Duration param in scrollTo not respected, investigate.
+  html`<input type="text"
     class="file-list-search"
     placeholder="Fuzzy Search"
     pattern="[a-zA-Z0-9-]+"
-    on="input-debounced: file-list-container.scrollTo(duration=0), AMP.setState({
-      ${endpointStateId}: {
-        ${endpointStateKey}: '${endpoint({
-          path: basepath,
-          search: '',
-        })}' + event.value,
-      }
-    })">`;
+    on="input-debounced: file-list-scroll-sentinel.scrollTo(duration=0),
+                         AMP.setState({
+                           ${endpointStateId}: {
+                             ${endpointStateKey}: '${endpoint({
+                               path: basepath,
+                               search: '',
+                             })}' + event.value,
+                           }
+                         })">`;
 
 
 const ExamplesDocumentModeSelect = () => html`
@@ -123,7 +125,7 @@ const FileListHeading = ({basepath, selectModePrefix}) => html`
 
 
 const wrapFileList = rendered => html`
-  <div class="file-list-container" id="file-list-container">
+  <div class="file-list-container">
     <div class="wrap">
       ${rendered}
     </div>
@@ -135,6 +137,8 @@ const FileList = ({basepath, fileSet, selectModePrefix}) =>
     AmpState(endpointStateId, {
       [endpointStateKey]: endpoint({path: basepath}),
     }),
+
+    html`<div id="file-list-scroll-sentinel"></div>`,
 
     FileListHeading({basepath, selectModePrefix}),
 
