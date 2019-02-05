@@ -73,7 +73,7 @@ const Header = ({isMainPage, links}) =>
 
 const HeaderFallbackSidebarAccordionSection = ({heading, content, isDefault}) =>
   html`<section ${htmlOptional(isDefault, 'id="default-section" expanded')}>
-    <h2>${heading}</h2>
+    <h3>${heading}</h3>
     ${content}
   </section>`;
 
@@ -131,30 +131,39 @@ const SvgDefs = symbols => html`
   </svg>`;
 
 
+const LinkRelPreloadFont = href =>
+  html`<link rel="preload" href="${href}" as="font" crossorigin>`;
+
+
 function renderTemplate({
   basepath, css, isMainPage, fileSet, serveMode, selectModePrefix}) {
 
-  const body = joinFragments([
-    SvgDefs([ampLogoSymbol]),
+  const head = joinFragments([
+    LinkRelPreloadFont('/_static/poppins-v5-latin-400.woff2'),
+    LinkRelPreloadFont('/_static/poppins-v5-latin-700.woff2'),
+  ]);
 
-    html`<div class="wrap">
-      ${Header({isMainPage, links: headerLinks})}
-      ${htmlOptional(isMainPage, ProxyForm())}
+  const body = joinFragments([
+    // Undisplayed content first.
+    SvgDefs([ampLogoSymbol]),
+    HeaderFallbackSidebar({isMainPage, links: headerLinks}),
+    SettingsModal({serveMode}),
+
+    html`<div class="header-sticky">
+      <div class="wrap">
+        ${Header({isMainPage, links: headerLinks})}
+      </div>
     </div>`,
 
-    HeaderFallbackSidebar({isMainPage, links: headerLinks}),
-
-    SettingsModal({serveMode}),
+    htmlOptional(isMainPage,
+        html`<div class="wrap show-on-large">${ProxyForm()}</div>`),
 
     FileList({basepath, selectModePrefix, fileSet}),
 
-    html`<div class="center">
-      Built with 💙  by
-      <a href="https://ampproject.org" class="underlined">the AMP Project</a>.
-    </div>`,
+    html`<footer class="center show-on-large">${builtWithLove}</footer>`,
   ]);
 
-  const docWithoutExtensions = AmpDoc({canonical: basepath, css, body});
+  const docWithoutExtensions = AmpDoc({canonical: basepath, css, body, head});
 
   return addRequiredExtensionsToHead(docWithoutExtensions);
 }

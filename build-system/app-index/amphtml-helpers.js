@@ -118,6 +118,10 @@ const addRequiredExtensionsToHead = (docStr, extensionConf = {
     addExtension('amp-form');
   }
 
+  if (docStr.search(/\<link[\s\S]+([^\>]+[\s\S])?as="?font[\s\S"]/) > -1) {
+    addExtension('amp-font');
+  }
+
   return docStr.replace(/(\<\/head\>)/i, (_, headClosingTag) =>
     joinFragments(Object.values(extensions), ExtensionScript) + headClosingTag);
 };

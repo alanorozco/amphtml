@@ -14,9 +14,10 @@
  * limitations under the License.
  */
 /* eslint-disable amphtml-internal/html-template */
+/* eslint-disable indent */
 
 const documentModes = require('./document-modes');
-const {html} = require('./html');
+const {html, htmlOptional} = require('./html');
 const {KeyValueOptions} = require('./form');
 
 
@@ -24,7 +25,8 @@ module.exports = ({label} = {label: 'Load URL by Proxy'}) => html`
   <div class="block">
     <form id="proxy-form" action="/proxy" target="_top">
       <label for="proxy-input">
-        ${label ? html`<span>${label}</span>` : ''}
+        ${htmlOptional(label,
+            html`<span class="proxy-form-label-inner">${label}</span>`)}
         <select name="mode">
           ${KeyValueOptions(documentModes)}
         </select>

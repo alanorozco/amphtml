@@ -43,12 +43,12 @@ const FileListSearchInput = ({basepath}) => html`
     class="file-list-search"
     placeholder="Fuzzy Search"
     pattern="[a-zA-Z0-9-]+"
-    on="input-debounced: AMP.setState({
+    on="input-debounced: file-list-container.scrollTo(duration=0), AMP.setState({
       ${endpointStateId}: {
         ${endpointStateKey}: '${endpoint({
           path: basepath,
           search: '',
-        })}' + event.value
+        })}' + event.value,
       }
     })">`;
 
@@ -108,7 +108,7 @@ const maybePrefixExampleDocHref = (basepath, name, selectModePrefix) =>
 
 const FileListHeading = ({basepath, selectModePrefix}) => html`
   <div class="file-list-heading">
-    <h3 class="code" id="basepath">
+    <h3 id="basepath">
       ${basepath}
     </h3>
     ${FileListSearchInput({basepath})}
@@ -123,7 +123,7 @@ const FileListHeading = ({basepath, selectModePrefix}) => html`
 
 
 const wrapFileList = rendered => html`
-  <div class="file-list-container">
+  <div class="file-list-container" id="file-list-container">
     <div class="wrap">
       ${rendered}
     </div>
