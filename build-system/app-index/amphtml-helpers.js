@@ -27,7 +27,6 @@ const componentTagNameRegex = /\<(amp-[^\s\>]+)/g;
 const templateTagTypeRegex = /\<template[^\>]+type="?([^\s"\>]+)/g;
 const linkRelAsFontRegex = /\<link[\s\S]+([^\>]+[\s\S])?as="?font[\s\S"]/;
 
-
 const containsTagRegex = tagName => new RegExp(`\\<${tagName}[\\s\\>]`);
 
 const containsByRegex = (str, re) => str.search(re) > -1;

@@ -155,8 +155,22 @@ const ListingShortcuts = ({listingShortcuts, current}) =>
   </ul>`;
 
 
-function renderTemplate({
-  basepath, css, isMainPage, fileSet, serveMode, selectModePrefix}) {
+function renderTemplate(opt_params) {
+  const {
+    basepath,
+    css,
+    isMainPage,
+    fileSet,
+    serveMode,
+    selectModePrefix,
+  } = {
+    basepath: '/',
+    isMainPage: false,
+    fileSet: [],
+    serveMode: 'default',
+    selectModePrefix: '/',
+    ...(opt_params || {}),
+  };
 
   const head = joinFragments([
     LinkRelPreloadFont('/_static/poppins-v5-latin-400.woff2'),
