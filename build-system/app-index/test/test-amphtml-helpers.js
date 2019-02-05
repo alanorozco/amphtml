@@ -266,6 +266,7 @@ describe('devdash', () => {
                 <amp-bar></amp-bar>
                 <div>
                   <amp-foo-bar-baz many="1" attributes="2">
+                    Text content
                   </amp-foo-bar-baz>
                 </div>
               </div>

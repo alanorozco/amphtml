@@ -88,15 +88,14 @@ body > footer {
 .amp-logo {
   display: flex;
   align-items: center;
-  height: 30px;
   color: #005af0;
   font-weight: bold;
-  font-size: 24px;
+  font-size: 18px;
   letter-spacing: 2px;
 }
 .amp-logo > .apnf {
   height: 30px;
-  margin-right: 10px;
+  margin-right: 12px;
   width: 30px;
 }
 .wrap {
@@ -256,7 +255,7 @@ amp-sidebar > .close > a {
 
 .settings-modal-header {
   background: rgba(255, 255, 255, 0.4);
-  height: 62px; /* same as top-level header */
+  height: 54px; /* same as top-level header */
 }
 #settings-modal h3 {
   padding: 20px 0 0;
@@ -405,8 +404,8 @@ a.underlined {
   position: absolute;
   pointer-events: none;
   width: 1px; /* non-zero */
-  height: 62px; /* same as top-level header's height */
-  top: -62px; /* negative of top-level header's height */
+  height: 54px; /* same as top-level header's height */
+  top: -54px; /* negative of top-level header's height */
 }
 
 .file-list-heading {
@@ -417,7 +416,7 @@ a.underlined {
   padding-top: 20px;
   margin-bottom: 40px;
   position: sticky;
-  top: 62px; /* same as top-level header height */
+  top: 54px; /* same as top-level header height */
   z-index: 99; /* one below top-level header */
 }
 
