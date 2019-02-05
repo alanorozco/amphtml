@@ -18,26 +18,45 @@ const {expect} = require('chai');
 const {JSDOM} = require('jsdom');
 
 
-const parseHtmlChunk = htmlStr =>
-  (new JSDOM(htmlStr)).window.document.body.firstElementChild;
+const parseHtmlChunk = htmlStr => {
+  const {body} = (new JSDOM(htmlStr)).window.document;
+  expect(body.children).to.have.length(1);
+  return body.firstElementChild;
+};
+
+
+const boundAttrRe = attr =>
+  new RegExp(`\\[${attr}\\]=(("[^"]+")|('[^']+')|([^\\s\\>]+))`);
 
 
 // JSDom doesn't parse attributes whose names don't follow the spec, so
 // our only way to test [attr] values is via regex.
 const getBoundAttr = (el, attr) => {
-  const match = el./*OK*/outerHTML.match(
-    new RegExp(`\\[${attr}\\]="?([^\\s"\\>]+)`), 'g');
-  if (match) {
-    return match[1];
+  const match = el./*OK*/outerHTML.match(boundAttrRe(attr));
+  if (!match) {
+    return;
   }
+  const [_, valuePart] = match;
+  if (valuePart.charAt(0) == '"' ||
+      valuePart.charAt(0) == '\'') {
+    return valuePart.substring(1, valuePart.length - 1);
+  }
+  return valuePart;
 }
 
 
-const assertValidAmphtml = (validator, string) => {
+const expectValidAmphtml = (validator, string) => {
   const {errors, status} = validator.validateString(string);
+
+  // Compare with empty array instring instead of checking `to.be.empty` so
+  // validation errors are output as AssertionErrors.
   expect(errors).to.deep.equal([]);
   expect(status).to.equal('PASS');
 };
 
 
-module.exports = {assertValidAmphtml, parseHtmlChunk, getBoundAttr};
+module.exports = {
+  expectValidAmphtml,
+  getBoundAttr,
+  parseHtmlChunk,
+};

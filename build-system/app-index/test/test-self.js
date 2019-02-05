@@ -21,7 +21,7 @@ const path = require('path');
 const {expect} = require('chai');
 
 const {
-  assertValidAmphtml,
+  expectValidAmphtml,
   getBoundAttr,
   parseHtmlChunk,
 } = require('./helpers');
@@ -37,45 +37,76 @@ describe('devdash', () => {
         expect(tagName).to.equal(tagName);
       });
 
+      it('fails with multiple children', () => {
+        expect(() => parseHtmlChunk('<a></a><a></a>')).to.throw;
+      });
+
+      it('fails with text node as content', () => {
+        expect(() => parseHtmlChunk('text content')).to.throw;
+      });
+
+      it('fails on empty string', () => {
+        expect(() => parseHtmlChunk('')).to.throw;
+      });
+
     });
 
     describe('getBoundAttr', () => {
 
-      it('returns bound attr when found', () => {
-        [
-          {
-            outerHTML: '<div myHref=a [myHref]=a></div>',
-            attr: 'myHref',
-            expected: 'a',
-          },
-          {
-            outerHTML: '<div foo=a [foo]="blah"></div>',
-            attr: 'foo',
-            expected: 'blah',
-          },
-          {
-            outerHTML: '<div [myHref]="b"></div>',
-            attr: 'myHref',
-            expected: 'b',
-          },
-          {
-            outerHTML: '<div [foo]="baz"></div>',
-            attr: 'foo',
-            expected: 'baz',
-          },
-        ].forEach(({outerHTML, attr, expected}) => {
-          expect(getBoundAttr({outerHTML}, attr)).to.equal(expected);
-        });
+      it('returns bound attr set with other bound attrs', () => {
+        const fakeEl = {outerHTML: '<div myHref=no [y]=b [myHref]=a></div>'};
+        expect(getBoundAttr(fakeEl, 'myHref')).to.equal('a');
+      });
+
+      it('returns bound attr set without quotes with unbound attr', () => {
+        const fakeEl = {outerHTML: '<div myHref=no [myHref]=a></div>'};
+        expect(getBoundAttr(fakeEl, 'myHref')).to.equal('a');
+      });
+
+      it('returns bound attr set with quotes with unbound attr', () => {
+        const fakeEl = {outerHTML: '<div foo=no [foo]="blah"></div>'};
+        expect(getBoundAttr(fakeEl, 'foo')).to.equal('blah');
+      });
+
+      it('returns bound attr set with quotes', () => {
+        const fakeEl = {outerHTML: '<div [myHref]="b"></div>'};
+        expect(getBoundAttr(fakeEl, 'myHref')).to.equal('b');
+      });
+
+      it('returns bound attr set without quotes', () => {
+        const fakeEl = {outerHTML: '<div [foo]=baz></div>'};
+        expect(getBoundAttr(fakeEl, 'foo')).to.equal('baz');
       });
 
       it('returns undefined when not found', () => {
-        expect(getBoundAttr({outerHTML: '<div></div>'}, 'whatever'))
-            .to.be.undefined;
+        const fakeEl = {outerHTML: '<div></div>'};
+        expect(getBoundAttr(fakeEl, 'whatever')).to.be.undefined;
+      });
+
+      it('returns value with whitespace', () => {
+        const valueWithWhitespace = ` ^..^      /
+                                      /_/\_____/
+                                         /\   /\
+                                        /  \ /  \ `;
+        const fakeEl = {
+          outerHTML: `<div [foo]="${valueWithWhitespace}"></div>`,
+        };
+        expect(getBoundAttr(fakeEl, 'foo')).to.equal(valueWithWhitespace);
+      });
+
+      it('returns value with double quote', () => {
+        const fakeEl = {outerHTML: '<div [foo]=\'ab"cd ef\'></div>'};
+        expect(getBoundAttr(fakeEl, 'foo')).to.equal('ab"cd ef');
+      });
+
+      it('returns value with single quote', () => {
+        const fakeEl = {outerHTML: '<div [foo]="ab\'cd ef"></div>'};
+        expect(getBoundAttr(fakeEl, 'foo')).to.equal('ab\'cd ef');
       });
 
     });
 
-    describe('assertValidAmphtml', () => {
+    describe('expectValidAmphtml', () => {
 
       it('passes with minimum valid doc', async() => {
         const validDocPath = path.join(__dirname,
@@ -83,7 +114,7 @@ describe('devdash', () => {
 
         const validDoc = (await fs.readFileAsync(validDocPath)).toString();
 
-        assertValidAmphtml(await amphtmlValidator.getInstance(), validDoc);
+        expectValidAmphtml(await amphtmlValidator.getInstance(), validDoc);
       });
 
       it('fails with invalid doc', async() => {
@@ -92,7 +123,7 @@ describe('devdash', () => {
         const validator = await amphtmlValidator.getInstance();
 
         expect(() => {
-          assertValidAmphtml(validator, invalidDoc);
+          expectValidAmphtml(validator, invalidDoc);
         }).to.throw;
       });
 

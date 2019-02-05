@@ -25,6 +25,8 @@ const {matchIterator} = require('./regex');
 
 const componentTagNameRegex = /\<(amp-[^\s\>]+)/g;
 const templateTagTypeRegex = /\<template[^\>]+type="?([^\s"\>]+)/g;
+const linkRelAsFontRegex = /\<link[\s\S]+([^\>]+[\s\S])?as="?font[\s\S"]/;
+
 
 // TODO(alanorozco): Expand
 const formTypes = ['input', 'select', 'form'];
@@ -118,11 +120,11 @@ const addRequiredExtensionsToHead = (docStr, extensionConf = {
     addExtension('amp-form');
   }
 
-  if (docStr.search(/\<link[\s\S]+([^\>]+[\s\S])?as="?font[\s\S"]/) > -1) {
+  if (docStr.search(linkRelAsFontRegex) > -1) {
     addExtension('amp-font');
   }
 
-  return docStr.replace(/(\<\/head\>)/i, (_, headClosingTag) =>
+  return docStr.replace(/\<\/head\>/i, headClosingTag =>
     joinFragments(Object.values(extensions), ExtensionScript) + headClosingTag);
 };
 
