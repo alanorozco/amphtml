@@ -29,11 +29,17 @@ body {
   font-family: -apple-system, system-ui, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
   font-size: 14px;
   line-height: 20px;
-  padding: 0;
-  margin: 0;
 }
-body.scroll-locked {
-  overflow: hidden;
+header,
+h3,
+h2,
+.file-list-search,
+.proxy-form-label-inner {
+  font-family: Poppins, sans-serif;
+}
+code,
+.code {
+  font-family: 'Fira Code', 'Inconsolata', Menlo, Consolas, monospace;
 }
 /* Hide the three default dots */
 .custom-loader .amp-active > div {
@@ -109,7 +115,6 @@ body > footer {
   display: block;
   margin-right: 20px;
   font-weight: bold;
-  font-family: Poppins, sans-serif;
 }
 #proxy-form > label > select {
   margin-right: 20px;
@@ -123,7 +128,6 @@ body > footer {
   background: linear-gradient(30deg, #fff calc(100% - 600px), #ebebf0 100%);
 }
 h3 {
-  font-family: Poppins, sans-serif;
   padding: 40px 0;
   line-height: 40px;
   font-size: 18px;
@@ -302,10 +306,6 @@ header .settings-cog-icon,
   mask-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24px' height='24px' viewBox='0 0 24 24' fill='%23000000'%3E%3Cpath d='M0 0h24v24H0z' fill='none'/%3E%3Cpath d='M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z'/%3E%3C/svg%3E");
   -webkit-mask-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24px' height='24px' viewBox='0 0 24 24' fill='%23000000'%3E%3Cpath d='M0 0h24v24H0z' fill='none'/%3E%3Cpath d='M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z'/%3E%3C/svg%3E");
 }
-code,
-.code  {
-  font-family: 'Fira Code', 'Inconsolata', Menlo, Consolas, monospace;
-}
 a {
   color: #005af0;
   text-decoration: none;
@@ -329,6 +329,7 @@ a.underlined {
   height: 20px;
   border-color: #ddd;
   border-width: 0 0 1px;
+  border-radius: 0; /* reset default */
 }
 .text-input:focus {
   border-color: #005af0;
@@ -386,7 +387,6 @@ a.underlined {
   flex-wrap: wrap;
   justify-content: flex-start;
   align-items: flex-start;
-
   min-height: initial;
 }
 
@@ -429,10 +429,6 @@ a.underlined {
 }
 header {
   display: flex;
-  font-family: Poppins, sans-serif;
-}
-.file-list-search {
-  font-family: Poppins, sans-serif;
 }
 .header-sticky {
   background: #fff;
