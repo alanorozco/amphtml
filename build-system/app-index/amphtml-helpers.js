@@ -28,6 +28,10 @@ const templateTagTypeRegex = /\<template[^\>]+type="?([^\s"\>]+)/g;
 const linkRelAsFontRegex = /\<link[\s\S]+([^\>]+[\s\S])?as="?font[\s\S"]/;
 
 
+const containsTagRegex = tagName => new RegExp(`\\<${tagName}[\\s\\>]`);
+
+const containsByRegex = (str, re) => str.search(re) > -1;
+
 // TODO(alanorozco): Expand
 const formTypes = ['input', 'select', 'form'];
 
@@ -114,9 +118,7 @@ const addRequiredExtensionsToHead = (docStr, extensionConf = {
     addExtension('amp-bind');
   }
 
-  const needsAmpForm = formTypes.some(tagName =>
-    docStr.search(new RegExp(`\\<${tagName}(\\s|\\>)`)) > -1);
-  if (needsAmpForm) {
+  if (formTypes.some(t => containsByRegex(docStr, containsTagRegex(t)))) {
     addExtension('amp-form');
   }
 
