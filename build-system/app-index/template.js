@@ -32,16 +32,16 @@ const builtWithLove =
   html`Built with ♡ by <a href="https://ampproject.org">the AMP Project</a>`;
 
 
-const HeaderLink = ({name, href, divider}) => html`
-  <li class="${divider ? 'divider' : ''}">
+const HeaderLink = ({name, href, divider}) =>
+  html`<li class="${divider ? 'divider' : ''}">
     <a target="_blank" rel="noopener noreferrer" href="${href}">
       ${name}
     </a>
   </li>`;
 
 
-const Header = ({isMainPage, links}) => html`
-  <header>
+const Header = ({isMainPage, links}) =>
+  html`<header>
     <h1 class="amp-logo">
       ${ampLogo} AMP
     </h1>
@@ -71,19 +71,15 @@ const Header = ({isMainPage, links}) => html`
   </header>`;
 
 
-const HeaderFallbackSidebarAccordionSection = ({
-  heading,
-  content,
-  isDefault,
-}) => html`
-  <section ${htmlOptional(isDefault, 'id="default-section" expanded')}>
+const HeaderFallbackSidebarAccordionSection = ({heading, content, isDefault}) =>
+  html`<section ${htmlOptional(isDefault, 'id="default-section" expanded')}>
     <h2>${heading}</h2>
     ${content}
   </section>`;
 
 
-const HeaderFallbackSidebar = ({isMainPage, links}) => html`
-  <amp-sidebar layout=nodisplay id="header-sidebar" side=right>
+const HeaderFallbackSidebar = ({isMainPage, links}) =>
+  html`<amp-sidebar layout=nodisplay id="header-sidebar" side=right>
     <div class="close">
       <a class="icon-button"
           on="tap: header-sidebar.close"
@@ -126,7 +122,8 @@ const HeaderBackToMainLink = () => html`
 
 
 const SvgDefs = symbols => html`
-  <svg style="position: absolute; width: 0; height: 0; overflow: hidden;" version="1.1" xmlns="http://www.w3.org/2000/svg"
+  <svg style="position: absolute; width: 0; height: 0; overflow: hidden;"
+      version="1.1" xmlns="http://www.w3.org/2000/svg"
       xmlns:xlink="http://www.w3.org/1999/xlink">
     <defs>
       ${joinFragments(symbols)}
@@ -147,14 +144,14 @@ function renderTemplate({
 
     HeaderFallbackSidebar({isMainPage, links: headerLinks}),
 
+    SettingsModal({serveMode}),
+
     FileList({basepath, selectModePrefix, fileSet}),
 
     html`<div class="center">
       Built with 💙  by
       <a href="https://ampproject.org" class="underlined">the AMP Project</a>.
     </div>`,
-
-    SettingsModal({serveMode}),
   ]);
 
   const docWithoutExtensions = AmpDoc({canonical: basepath, css, body});
