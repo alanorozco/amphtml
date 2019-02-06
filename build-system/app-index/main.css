@@ -118,6 +118,11 @@ body > footer {
   align-items: center;
   flex-wrap: wrap;
 }
+.proxy-form-sidebar-container #proxy-form > label {
+  align-items: flex-end;
+  justify-content: right;
+  flex-direction: column-reverse;
+}
 .proxy-form-label-inner {
   display: block;
   margin-right: 20px;
@@ -126,13 +131,25 @@ body > footer {
 #proxy-form > label > select {
   margin-right: 20px;
 }
+.proxy-form-sidebar-container #proxy-form > label > select {
+  margin-top: 12px;
+  margin-right: 0;
+}
 #proxy-input {
   display: block;
   flex: 1;
 }
+.proxy-form-sidebar-container #proxy-input {
+  width: 100%;
+}
+.proxy-form-sidebar-container #proxy-form .form-info {
+  text-align: left;
+  position: absolute;
+  margin-top: -32px;
+}
 .file-list-container,
 .settings-modal-content {
-  background: #fafafc;
+  background: #f5f5fa;
 }
 h3 {
   padding: 40px 0;
@@ -141,6 +158,7 @@ h3 {
   margin: 0;
   display: flex;
 }
+
 #settings-modal > div {
   display: flex;
   flex-direction: column;
@@ -172,15 +190,16 @@ h3 {
   border-width: 1px 0 0;
 }
 
-#header-sidebar amp-accordion > section:last-of-type  {
-  border-width: 1px 0;
+#header-sidebar amp-accordion > section:first-of-type  {
+  border-width: 0;
 }
 
 #header-sidebar amp-accordion > section > h3 {
   background: none;
   border: none;
   font-size: 16px;
-  padding: 16px 30px;
+  padding: 12px 20px;
+  line-height: inherit;
 }
 
 #header-sidebar amp-accordion > section > h3:focus {
@@ -188,12 +207,12 @@ h3 {
 }
 
 #header-sidebar amp-accordion > section > div {
-  padding: 16px 30px; /* same as corresponding h2 */
+  padding: 12px 20px; /* same as corresponding h2 */
 }
 
 #header-sidebar .proxy-form-sidebar-container {
   padding-top: 0;
-  padding-bottom: 30px;
+  padding-bottom: 24px;
 }
 
 amp-accordion > section > div > .block {
@@ -215,6 +234,7 @@ amp-sidebar > .close .icon-button {
 
 .icon-button {
   display: inline-block;
+  box-sizing: border-box;
   cursor: pointer;
   width: 44px;
   height: 44px;
@@ -224,7 +244,7 @@ amp-sidebar > .close .icon-button {
 }
 
 .icon-button:active {
-  background: #bcd5ff;
+  background: #ccdfff;
   color: black;
 }
 
@@ -238,19 +258,19 @@ amp-sidebar > .close > a {
   flex-direction: column;
   list-style: none;
   font-size: 16px;
-  margin: -10px 0 16px;
+  margin: -10px 0 12;
   padding: 0;
 }
 
 .sidebar-links > li {
-  padding: 16px 30px; /* same as sidebar's accordion's heading */
+  padding: 12px 20px; /* same as sidebar's accordion's heading */
 }
 
 .sidebar-links > li > a {
   display: block;
   /* reset and reapply parent's margin to cover its tappable area */
-  margin: -16px -30px;
-  padding: 16px 30px;
+  margin: -12px -20px;
+  padding: 12px 20px;
 }
 
 .settings-modal-header {
@@ -281,7 +301,7 @@ amp-sidebar > .close > a {
   margin: 10px 0 0;
 }
 .selector-block[option][selected] {
-  background-color: #bcd5ff;
+  background-color: #ccdfff;
   outline: none;
 }
 .selector-block[option][selected] > .check-icon {
@@ -322,10 +342,6 @@ a {
 }
 a.underlined {
   text-decoration: underline;
-}
-
-#examples-mode-select {
-  margin: 0 0 0 10px;
 }
 .center {
   text-align: center;
@@ -386,7 +402,7 @@ a.underlined {
   color: #005af0;
 }
 
-@media (max-width: 380px) {
+@media (max-width: 400px) {
   .listing-shortcuts {
     font-size: 13px;
   }
@@ -421,7 +437,7 @@ a.underlined {
 }
 
 .file-list-heading::before {
-  background: linear-gradient(to bottom, rgba(250, 250, 252, 1) 0%, rgba(250, 250, 252, 1) 65%, rgba(255, 255, 255, 0) 100%);
+  background: linear-gradient(to bottom, #f5f5fa 0%, #f5f5fa 65%, rgba(255, 255, 255, 0) 100%);
   position: absolute;
   z-index: 0;
   pointer-events: none;
@@ -453,6 +469,14 @@ a.underlined {
   border-bottom: solid #ddd 1px;
   background: transparent;
   margin: 0 20px 0 8px;
+  min-width: 0;
+}
+
+@media (max-width: 400px) {
+  h3,
+  .file-list-search {
+    font-size: 16px;
+  }
 }
 
 .file-list-search:focus {
@@ -467,7 +491,7 @@ a.underlined {
 }
 
 .file-list {
-  padding: 0 0 40px;
+  margin: 0 -12px;
 }
 
 .file-list div[role="list"] {
@@ -486,7 +510,7 @@ a.underlined {
 }
 
 .file-link-container {
-  margin-bottom: 12px;
+  position: relative;
   /* three columns */
   width: 31%;
 }
@@ -503,20 +527,22 @@ a.underlined {
   }
 }
 
-.file-list .file-link {
-  padding: 0;
+.file-link {
+  padding: 8px 12px;
   margin: 0;
   display: block;
   text-overflow: ellipsis;
   overflow: hidden;
   white-space: nowrap;
   color: #000;
+  z-index: 1;
 }
 
-.file-list .file-link:hover {
-  text-decoration: underline;
+.file-link:hover {
   color: #005af0;
+  background: #fff;
 }
+
 .form-info {
   margin: 10px 0 0;
   font-size: 12px;
@@ -531,6 +557,8 @@ header {
 }
 header .settings-cog-icon {
   background: #000;
+  width: 100%;
+  height: 100%;
 }
 .header-sticky {
   background: #fff;
@@ -545,6 +573,7 @@ header .settings-cog-icon {
 }
 header > ul {
   display: flex;
+  align-items: center;
   margin: 0;
   padding: 0;
   list-style: none;
@@ -552,11 +581,14 @@ header > ul {
 header > ul > li {
   display: flex;
   height: 22px; /* same as line-height */
-  padding: 0 0 0 20px;
+  padding-left: 20px;
   font-weight: bold;
 }
+header > ul > li.icon-button {
+  padding-left: 0;
+}
 header > ul > li.divider {
-  padding-right: 30px;
+  padding-right: 20px;
 }
 header > ul > li > a {
   color: #000;
@@ -566,8 +598,8 @@ header > ul > li > a:hover {
 }
 header .burger {
   position: absolute;
-  right: 8px;
-  top: 8px;
+  right: 5px;
+  top: 5px;
   padding: 0;
   font-size: 20px; /* arbitrary so "☰" looks good */
 }
