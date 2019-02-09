@@ -23,12 +23,12 @@ const headerLinks = require('./header-links');
 const ProxyForm = require('./proxy-form');
 const {AmpDoc, addRequiredExtensionsToHead} = require('./amphtml-helpers');
 const {FileList} = require('./file-list');
-const {html, joinFragments} = require('./html');
+const {html} = require('./safe-html');
 const {SettingsModal, SettingsOpenButton} = require('./settings');
 
 
 const HeaderLink = ({name, href, divider}) => html`
-  <li class="${divider ? 'divider' : ''}">
+  <li class="${divider && 'divider'}">
     <a target="_blank" rel="noopener noreferrer" href="${href}">
       ${name}
     </a>
@@ -42,7 +42,7 @@ const Header = ({isMainPage, links}) => html`
       ${!isMainPage ? HeaderBackToMainLink() : ''}
     </div>
     <ul class="right-nav">
-      ${joinFragments(links, ({name, href, divider}, i) =>
+      ${links.map(({name, href, divider}, i) =>
           HeaderLink({
             divider: divider || i == links.length - 1,
             name,
@@ -76,7 +76,7 @@ function renderTemplate(opt_params) {
     ...(opt_params || {}),
   };
 
-  const body = joinFragments([
+  const body = [
     html`<div class="wrap">
       ${Header({isMainPage, links: headerLinks})}
       ${ProxyFormOptional({isMainPage})}
@@ -90,9 +90,14 @@ function renderTemplate(opt_params) {
     </div>`,
 
     SettingsModal({serveMode}),
-  ]);
+  ];
 
-  const docWithoutExtensions = AmpDoc({canonical: basepath, css, body});
+  const docWithoutExtensions = AmpDoc({
+    canonical:
+    basepath,
+    css,
+    body,
+  }).toString();
 
   return addRequiredExtensionsToHead(docWithoutExtensions);
 }

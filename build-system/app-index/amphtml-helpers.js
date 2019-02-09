@@ -19,7 +19,7 @@
 const assert = require('assert');
 const boilerPlate = require('./boilerplate');
 
-const {html, joinFragments} = require('./html');
+const {html} = require('./safe-html');
 const {matchIterator} = require('./regex');
 
 
@@ -45,7 +45,7 @@ const ExtensionScript = ({name, version, isTemplate}) =>
 const AmpState = (id, state) => html`
   <amp-state id="${id}">
     <script type="application/json">
-      ${JSON.stringify(state)}
+      ${state}
     </script>
   </amp-state>`;
 
@@ -71,11 +71,11 @@ const AmpDoc = ({body, css, head, canonical}) => {
       <meta charset="utf-8">
       <meta name="viewport"
           content="width=device-width,minimum-scale=1,initial-scale=1">
-      ${css ? html`<style amp-custom>${css}</style>` : ''}
+      ${css && html`<style amp-custom>${css}</style>`}
       <link rel="canonical" href="${canonical}">
       ${boilerPlate}
       <script async src="https://cdn.ampproject.org/v0.js"></script>
-      ${head || ''}
+      ${head}
     </head>
     <body>
       ${body}
@@ -121,7 +121,7 @@ const addRequiredExtensionsToHead = (docStr, extensionConf = {
   }
 
   return docStr.replace(/\<\/head\>/i, headClosingTag =>
-    joinFragments(Object.values(extensions), ExtensionScript) + headClosingTag);
+    Object.values(extensions).map(ExtensionScript).join('') + headClosingTag);
 };
 
 

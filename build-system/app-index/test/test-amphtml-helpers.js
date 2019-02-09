@@ -18,7 +18,7 @@ const amphtmlValidator = require('amphtml-validator');
 
 const {expect} = require('chai');
 const {expectValidAmphtml, parseHtmlChunk} = require('./helpers');
-const {html} = require('../html');
+const {html} = require('../safe-html');
 const {JSDOM} = require('jsdom');
 
 const {
@@ -48,7 +48,7 @@ describe('devdash', () => {
       it('creates valid doc with min required fields', async() => {
         expectValidAmphtml(await amphtmlValidator.getInstance(), AmpDoc({
           canonical: '/',
-        }));
+        }).toString());
       })
 
       it('creates valid doc with set fields', async() => {
@@ -88,7 +88,7 @@ describe('devdash', () => {
               }
             </script>`,
           body: html`<div>Hola</div>`,
-        }));
+        }).toString());
       });
     });
 
@@ -146,16 +146,6 @@ describe('devdash', () => {
         expect(JSON.parse(textContent)).to.deep.equal(state);
       });
 
-      it('renders string literal', () => {
-        const id = 'whatever';
-        const state = 'foo';
-
-        const {textContent} =
-            parseHtmlChunk(AmpState(id, state)).firstElementChild;
-
-        expect(JSON.parse(textContent)).to.equal(state);
-      });
-
       it('renders array', () => {
         const id = 'whatever';
         const state = ['foo', 'bar', 'baz'];
@@ -188,7 +178,7 @@ describe('devdash', () => {
             <body>
               <amp-foo foo="bar"></amp-foo>
             </body>
-          </html>`;
+          </html>`.toString();
 
         expect(new JSDOM(addRequiredExtensionsToHead(rawStr))).to.be.ok;
       });
@@ -224,7 +214,7 @@ describe('devdash', () => {
                 <template type="amp-mustache"></template>
               </div>
             </body>
-          </html>`;
+          </html>`.toString();
 
         const {document} =
             (new JSDOM(addRequiredExtensionsToHead(rawStr))).window;
@@ -271,7 +261,7 @@ describe('devdash', () => {
                 </div>
               </div>
             </body>
-          </html>`;
+          </html>`.toString();
 
         const {document} =
             (new JSDOM(addRequiredExtensionsToHead(rawStr))).window;
@@ -307,7 +297,7 @@ describe('devdash', () => {
                 </div>
               </div>
             </body>
-          </html>`;
+          </html>`.toString();
 
         const {document} =
             (new JSDOM(addRequiredExtensionsToHead(rawStr))).window;
@@ -334,7 +324,7 @@ describe('devdash', () => {
             <body>
               <form action="whatever.com"></form>
             </body>
-          </html>`;
+          </html>`.toString();
 
         const {document} =
             (new JSDOM(addRequiredExtensionsToHead(rawStr))).window;
@@ -363,7 +353,7 @@ describe('devdash', () => {
               <input>
               <input>
             </body>
-          </html>`;
+          </html>`.toString();
 
         const {document} =
             (new JSDOM(addRequiredExtensionsToHead(rawStr))).window;
@@ -390,7 +380,7 @@ describe('devdash', () => {
             <body>
               <select></select>
             </body>
-          </html>`;
+          </html>`.toString();
 
         const {document} =
             (new JSDOM(addRequiredExtensionsToHead(rawStr))).window;

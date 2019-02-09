@@ -20,7 +20,7 @@
 const documentModes = require('./document-modes');
 const {AmpState, ampStateKey, containsExpr} = require('./amphtml-helpers');
 const {appendQueryParamsToUrl, replaceLeadingSlash} = require('./url');
-const {html, joinFragments} = require('./html');
+const {html} = require('./safe-html');
 const {KeyValueOptions} = require('./form');
 
 
@@ -73,16 +73,15 @@ const linksToExample = (shouldContainBasepath, opt_name) =>
 
 
 const ExamplesSelectModeOptional = ({basepath, selectModePrefix}) =>
-  !examplesPathRegex.test(basepath + '/') ? '' : ExamplesDocumentModeSelect({
-    selectModePrefix,
-  });
+  examplesPathRegex.test(basepath + '/') &&
+    ExamplesDocumentModeSelect({selectModePrefix});
 
 
 const FileListItem = ({name, href, boundHref}) =>
   html`<div class="file-link-container" role="listitem">
     <a class="file-link"
-      ${boundHref ? `[href]="${boundHref}" ` : ''}
-      ${href ? `href="${href}" ` : ''}>
+      ${boundHref && html`[href]="${boundHref}"`}
+      ${href && html`href="${href}"`}>
       ${name}
     </a>
   </div>`;
@@ -131,7 +130,7 @@ const wrapFileList = rendered => html`
 
 
 const FileList = ({basepath, fileSet, selectModePrefix}) =>
-  wrapFileList(joinFragments([
+  wrapFileList([
     AmpState(endpointStateId, {
       [endpointStateKey]: endpoint({path: basepath}),
     }),
@@ -150,7 +149,7 @@ const FileList = ({basepath, fileSet, selectModePrefix}) =>
 
       <div placeholder>
         <div role="list">
-          ${joinFragments(fileSet, name =>
+          ${fileSet.map(name =>
             PlaceholderFileListItem({
               name,
               href: maybePrefixExampleDocHref(basepath, name, selectModePrefix),
@@ -179,6 +178,6 @@ const FileList = ({basepath, fileSet, selectModePrefix}) =>
         Show more
       </div>
     </amp-list>`,
-  ]));
+  ]);
 
 module.exports = {FileList};

@@ -16,19 +16,32 @@
 
 const {expect} = require('chai');
 const {
+  resetAllForTesting,
   escapeHtmlSpecialCharsForTesting: escapeHtmlSpecialChars,
+  getAllCachesForTesting,
   html,
   safeForTesting: safe,
 } = require('../safe-html');
 
 describe('safe-html', () => {
 
-  const evilUnescaped = '<script>alert("evil")</script>';
+  const evil = '<script>alert("evil")</script>';
   const evilEscaped = '&lt;script&gt;alert(&quot;evil&quot;)&lt;/script&gt;';
 
+  function isEmptyObjOrUndef(obj) {
+    return obj === undefined || Object.keys(obj).length < 1;
+  }
+
+  afterEach(() => {
+    resetAllForTesting();
+    expect(getAllCachesForTesting()).to.satisfy(caches =>
+      caches.every(cache =>
+        Object.keys(cache).every(k => isEmptyObjOrUndef(cache[k]))));
+  });
+
   describe('self-test `evilEscaped` string', () => {
-    it('equals escaped `evilUnescaped`', () => {
-      expect(escapeHtmlSpecialChars(evilUnescaped)).to.equal(evilEscaped);
+    it('equals escaped `evil`', () => {
+      expect(escapeHtmlSpecialChars(evil)).to.equal(evilEscaped);
     });
 
     it('does not contain HTML special chars', () => {
@@ -69,6 +82,20 @@ describe('safe-html', () => {
       expect(renderer.toString()).to.equal('<div><ul><li></li></ul></div>');
     });
 
+    it('concats multiple interpolated args', () => {
+      expect(html`a ${'b'} c${' d'}`.toString()).to.equal('a b c d');
+    });
+
+    it('escapes multiple interpolated args', () => {
+      expect(html`a${evil}b${evil}`.toString())
+          .to.equal(`a${evilEscaped}b${evilEscaped}`);
+    });
+
+    it('escapes evil', () => {
+      const renderer = html`${evil}`;
+      expect(renderer.toString()).to.equal(evilEscaped);
+    });
+
     it('leaves innocent strings alone', () => {
       const renderer = html`<div>${'benign'}</div>`;
       expect(renderer.toString()).to.equal('<div>benign</div>');
@@ -80,8 +107,44 @@ describe('safe-html', () => {
     });
 
     it('leaves innocent floats alone', () => {
-      const renderer = html `<div>${3.1416}</div>`;
+      const renderer = html`<div>${3.1416}</div>`;
       expect(renderer.toString()).to.equal('<div>3.1416</div>');
+    });
+
+    it('leaves innocent <> chars in attr value alone', () => {
+      const renderer = html`<div data-x="${'<>'}"></div>`;
+      expect(renderer.toString()).to.equal('<div data-x="<>"></div>');
+    });
+
+    it('allows escaped quotes in intepolated attr value', () => {
+      const renderer = html`<div data-x="${'\\"'}"></div>`;
+      expect(renderer.toString()).to.equal('<div data-x="\\""></div>');
+    });
+
+    it('escapes double quote as only char in interpolated attr value', () => {
+      const renderer = html`<div data-x="${'"'}"></div>`;
+      expect(renderer.toString()).to.equal('<div data-x="\\""></div>');
+    });
+
+    it('escapes double quote at tail of interpolated attr value', () => {
+      const renderer = html`<div data-x="${'abc "'}"></div>`;
+      expect(renderer.toString()).to.equal('<div data-x="abc \\""></div>');
+    });
+
+    it('escapes double quote at head of interpolated attr value', () => {
+      const renderer = html`<div data-x="${'" abc'}"></div>`;
+      expect(renderer.toString()).to.equal('<div data-x="\\" abc"></div>');
+    });
+
+    it('escapes double quote in the middle of interpolated attr value', () => {
+      const renderer = html`<div data-x="${'abc " def'}"></div>`;
+      expect(renderer.toString()).to.equal('<div data-x="abc \\" def"></div>');
+    });
+
+    it('escapes multiple double quotes in interpolated attr value', () => {
+      const renderer = html`<div data-x="${'" abc " def" hijk'}"></div>`;
+      expect(renderer.toString()).to.equal(
+        '<div data-x="\\" abc \\" def\\" hijk"></div>');
     });
 
     it('leaves innocent JSON alone', () => {
@@ -123,6 +186,31 @@ describe('safe-html', () => {
         `<script type="application/json">${json}</script>`);
     });
 
+    it('annuls JSON context (escapes value) when closing <script> tag', () => {
+      const obj = {
+        hello: 'world',
+        foo: {
+          bar: ['baz'],
+        },
+      };
+      const json = JSON.stringify(obj);
+      const escapedJson = escapeHtmlSpecialChars(json);
+      const renderer = html`<script></script>${json}`;
+      expect(renderer.toString()).to.equal(`<script></script>${escapedJson}`);
+    });
+
+    it('stringifies objects in JSON context (simple <script>)', () => {
+      const obj = {
+        hello: 'world',
+        foo: {
+          bar: ['baz'],
+        },
+      };
+      const json = JSON.stringify(obj);
+      const renderer = html`<script>${obj}</script>`;
+      expect(renderer.toString()).to.equal(`<script>${json}</script>`);
+    });
+
     it('stringifies objects in JSON context (nested)', () => {
       const obj = {
         hello: 'world',
@@ -139,15 +227,62 @@ describe('safe-html', () => {
     });
 
     it('fails to stringify objects when not in JSON context', () => {
-      expect(() => html`<div>${{
-        hello: 'world',
-        foo: {
-          bar: ['baz'],
-        },
-      }}</div>`.toString()).to.throw;
+      expect(() => {
+        html`<div>${{hello: 'world'}}</div>`.toString();
+      }).to.throw;
     });
 
-    it('concats arrays of safe values', () => {
+    it('concats arrays of strings containing safe chars', () => {
+      const renderer = html`<div>${['a', 'b', 'c']}</div>`;
+      expect(renderer.toString()).to.equal('<div>abc</div>');
+    });
+
+    it('concats arrays of safe types (number)', () => {
+      const renderer = html`<div>${[1, 1.23, 5]}</div>`;
+      expect(renderer.toString()).to.equal('<div>11.235</div>');
+    });
+
+    it('does not take array with objects when in tag context', () => {
+      expect(() => {
+        html`<div>${[1, {foo: 'bar'}, 5]}</div>`.toString();
+      }).to.throw;
+    });
+
+    it('serializes array with objects when in JSON context', () => {
+      const arr = [1, {foo: 'bar'}, 'tacos'];
+      const json = JSON.stringify(arr);
+      const renderer = html`<script>${arr}</script>`;
+      expect(renderer.toString()).to.equal(`<script>${json}</script>`);
+    });
+
+    it('serializes array of strings when in JSON context', () => {
+      const arr = ['a', 'b', 'c'];
+      const json = JSON.stringify(arr);
+      const renderer = html`<script>${arr}</script>`;
+      expect(renderer.toString()).to.equal(`<script>${json}</script>`);
+    });
+
+    it('serializes array of strings when in JSON', () => {
+      const arr = ['a', 'b', 'c'];
+      const json = JSON.stringify(arr);
+      const renderer = html`<script id="${'<>'}">${arr}</script>`;
+      expect(renderer.toString()).to.equal(`<script id="<>">${json}</script>`);
+    });
+
+    it('serializes array of strings when in JSON (nested)', () => {
+      const arr = ['a', 'b', 'c'];
+      const json = JSON.stringify(arr);
+      const renderer = html`<div id="${'<>'}"><script>${arr}</script></div>`;
+      expect(renderer.toString()).to.equal(
+          `<div id="<>"><script>${json}</script></div>`);
+    });
+
+    it('allows partial attributes', () => {
+      expect(html`a="${'<>'}"`.toString()).to.equal('a="<>"');
+    });
+
+
+    it('concats arrays of generated safe values', () => {
       const renderer = html`<article>${[
         html`<h2>Header</h2>`,
         html`<p>Lorem Ipsum</p>`,
@@ -159,9 +294,9 @@ describe('safe-html', () => {
 
     it('concats arrays of mixed safety values while escaping unsafe', () => {
       const renderer = html`<div>${[
-        evilUnescaped,
+        evil,
         html`<p>Lorem Ipsum</p>`,
-        evilUnescaped,
+        evil,
       ]}</div>`;
 
       expect(renderer.toString()).to.equal(
@@ -169,16 +304,106 @@ describe('safe-html', () => {
     });
 
     it('escapes innerHTML', () => {
-      const renderer = html`<div>${evilUnescaped}</div>`;
+      const renderer = html`<div>${evil}</div>`;
       expect(renderer.toString()).to.equal(`<div>${evilEscaped}</div>`);
     });
 
     it('escapes innerHTML (nested)', () => {
-      const renderer = html`<div>${
-        html`<section>${evilUnescaped}</section>`
-      }</div>`;
+      const renderer = html`<div>${html`<section>${evil}</section>`}</div>`;
       expect(renderer.toString()).to.equal(
           `<div><section>${evilEscaped}</section></div>`);
+    });
+
+    it('ampstate', () => {
+      const id = 'a';
+      const state = {foo: 'bar'};
+      const renderer =
+        html`<amp-state id="${id}">
+          <script type="application/json">
+            ${state}
+          </script>
+        </amp-state>`
+
+      const expected =
+        `<amp-state id="${id}">
+          <script type="application/json">
+            ${JSON.stringify(state)}
+          </script>
+        </amp-state>`
+
+      expect(renderer.toString()).to.equal(expected);
+    })
+
+    it('escapes innerHTML (nested and multiple)', () => {
+      const renderer = html`<div>${
+        html`<section>${evil}</section>`
+      }</div><ul><li>${evil}</li></ul>`;
+
+      expect(renderer.toString()).to.equal(
+        `<div><section>${evilEscaped}</section></div>` +
+        `<ul><li>${evilEscaped}</li></ul>`);
+    });
+
+    it('escapes/allows mixed with mixed levels of nesting', () => {
+      const obj = {foo: 'bar'};
+      const objJson = JSON.stringify(obj);
+      const objJsonEscaped = escapeHtmlSpecialChars(objJson);
+      const arr = [1, 2, 3];
+      const arrJson = JSON.stringify(arr);
+      const renderer = html`<div attr="${
+        '>ok<' // should not be escaped
+      }"><script>${
+        obj // should be serialized and unescaped
+      }</script><div>${
+        objJson // should be escaped
+      }</div>${
+        evil // should be escaped (obvs)
+      }<script type="application/json">${
+        arr // should be seralized and unescaped
+      }</script><div>${
+        html`<ul>${
+          evil // should be escaped (obvs)
+        }</ul>`
+      }<ul>${
+        html`<li>${[
+          html`<a href="${
+            'not"ok' // should be escaped
+          }">${
+            'Hello & Welcome' // should be escaped
+          }</a><br />`,
+          'I consist of valid chars only',
+          html`<div>I'm a static div</div>`,
+        ]}</li>`
+      }</ul>`;
+
+      const expected = `<div attr="${
+        '>ok<' // should not be escaped
+      }"><script>${
+        objJson // should be serialized and unescaped
+      }</script><div>${
+        objJsonEscaped // should be escaped
+      }</div>${
+        evilEscaped // should be escaped (obvs)
+      }<script type="application/json">${
+        arrJson // should be seralized and unescaped
+      }</script><div>${
+        `<ul>${
+          evilEscaped // should be escaped (obvs)
+        }</ul>`
+      }<ul>${
+        `<li>${[
+          `<a href="${
+            'not\\"ok' // should be escaped
+          }">${
+            'Hello &amp; Welcome' // should be escaped
+          }</a><br />`,
+          'I consist of valid chars only',
+          '<div>I\'m a static div</div>',
+        ].join('')}</li>`
+      }</ul>`;
+
+      expect(renderer.toString()).to.equal(expected);
+
     });
   });
 });

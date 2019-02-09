@@ -15,7 +15,8 @@
  */
 /* eslint-disable indent */
 /* eslint-disable amphtml-internal/html-template */
-const {html, joinFragments} = require('./html');
+
+const {html} = require('./safe-html');
 
 const serveModes = [
   {
@@ -56,7 +57,7 @@ const ServeModeSelector = ({serveMode}) => html`
       layout="container"
       on="select:serve-mode-form.submit"
       name="mode">
-      ${joinFragments(serveModes, ({value, description}) =>
+      ${serveModes.map(({value, description}) =>
         SelectorBlock({
           id: `serve_mode_${value}`,
           value,

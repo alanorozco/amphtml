@@ -14,28 +14,12 @@
  * limitations under the License.
  */
 
-const identity = a => a;
+/** @enum */
+const Context = {
+  TAG_BODY: 0,
+  JSON_BODY: 1,
+  ATTR_VALUE: 2,
+  TAG_ATTR_CONTENT: 3,
+};
 
-
-/**
- * Takes a set of HTML fragments and concatenates them.
- * @param {!Array<T>} fragments
- * @param {function(T):string} renderer
- * @return {string}
- * @template T
- */
-const joinFragments = (fragments, renderer = identity) =>
-  fragments.map(renderer).join('');
-
-
-/**
- * pass-through for syntax highlighting
- * @param {!Array<string>} strings
- * @param {...*} values
- * @return {string}
- */
-const html = (strings, ...values) =>
-  joinFragments(strings, (string, i) => string + (values[i] || ''));
-
-
-module.exports = {html, joinFragments};
+module.exports = {Context};

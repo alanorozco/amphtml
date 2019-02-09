@@ -18,8 +18,8 @@ const {expect} = require('chai');
 const {JSDOM} = require('jsdom');
 
 
-const parseHtmlChunk = htmlStr => {
-  const {body} = (new JSDOM(htmlStr)).window.document;
+const parseHtmlChunk = htmlStrOrRenderer => {
+  const {body} = (new JSDOM(htmlStrOrRenderer.toString())).window.document;
   expect(body.children).to.have.length(1);
   return body.firstElementChild;
 };
@@ -52,7 +52,7 @@ const expectValidAmphtml = (validator, string) => {
   // Compare with empty array instead of checking `to.be.empty` so
   // validation errors are output as AssertionErrors.
   expect(errors).to.deep.equal([]);
-  expect(status).to.equal('PASS');
+  expect(status, string).to.equal('PASS');
 };
 
 
