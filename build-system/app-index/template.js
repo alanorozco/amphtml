@@ -138,10 +138,6 @@ const SvgDefs = symbols => html`
   </svg>`;
 
 
-const LinkRelPreloadFont = href =>
-  html`<link rel="preload" href="${href}" as="font" crossorigin>`;
-
-
 const ListingShortcut = ({href, name, basepath}, opt_current) =>
   html`<li class="${htmlOptional((basepath || href) == opt_current, 'active')}">
     <a href="${href}">${name || basepath || href}</a>
@@ -172,10 +168,9 @@ function renderTemplate(opt_params) {
     ...(opt_params || {}),
   };
 
-  const head = joinFragments([
-    LinkRelPreloadFont('/_static/poppins-v5-latin-400.woff2'),
-    LinkRelPreloadFont('/_static/poppins-v5-latin-700.woff2'),
-  ]);
+  const head =
+    html`<link href="https://fonts.googleapis.com/css?family=Poppins:400,700"
+      rel="stylesheet" type="text/css">`;
 
   const body = joinFragments([
     // Undisplayed content first.

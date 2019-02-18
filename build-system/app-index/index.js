@@ -19,7 +19,6 @@ const api = require('./api/api');
 const basepathMappings = require('./basepath-mappings');
 const BBPromise = require('bluebird');
 const bundler = require('./bundler');
-const express = require('express');
 const fs = BBPromise.promisifyAll(require('fs'));
 const path = require('path');
 const {
@@ -97,8 +96,6 @@ function installExpressMiddleware(app) {
   api.installExpressMiddleware(app);
 
   app.get(['/', '/*'], serveIndex);
-
-  app.use('/_static', express.static(join(__dirname, './static')));
 }
 
 

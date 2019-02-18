@@ -25,7 +25,6 @@ const {matchIterator} = require('./regex');
 
 const componentTagNameRegex = /\<(amp-[^\s\>]+)/g;
 const templateTagTypeRegex = /\<template[^\>]+type="?([^\s"\>]+)/g;
-const linkRelAsFontRegex = /\<link[\s\S]+([^\>]+[\s\S])?as="?font[\s\S"]/;
 
 const containsTagRegex = tagName => new RegExp(`\\<${tagName}[\\s\\>]`);
 
@@ -119,10 +118,6 @@ const addRequiredExtensionsToHead = (docStr, extensionConf = {
 
   if (formTypes.some(t => containsByRegex(docStr, containsTagRegex(t)))) {
     addExtension('amp-form');
-  }
-
-  if (docStr.search(linkRelAsFontRegex) > -1) {
-    addExtension('amp-font');
   }
 
   return docStr.replace(/\<\/head\>/i, headClosingTag =>

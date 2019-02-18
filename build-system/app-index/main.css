@@ -13,18 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-@font-face {
-  font-family: Poppins;
-  font-style: normal;
-  font-weight: 700;
-  src: local("Poppins Bold"), local("Poppins-Bold"), url(/_static/poppins-v5-latin-700.woff2) format("woff2");
-}
-@font-face {
-  font-family: Poppins;
-  font-style: normal;
-  font-weight: 400;
-  src: local("Poppins Regular"), local("Poppins-Regular"), url(/_static/poppins-v5-latin-400.woff2) format("woff2");
-}
 body {
   font-family: -apple-system, system-ui, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
   font-size: 16px;
