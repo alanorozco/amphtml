@@ -25,7 +25,11 @@ const {AmpDoc, addRequiredExtensionsToHead} = require('./amphtml-helpers');
 const {ampLogo, ampLogoSymbol} = require('./amp-logo-svg');
 const {FileList} = require('./file-list');
 const {html, htmlOptional, joinFragments} = require('./html');
-const {SettingsModal, SettingsOpenButton} = require('./settings');
+const {
+  SettingsBlock,
+  SettingsModal,
+  SettingsModalOpenButton,
+} = require('./settings');
 
 
 const listingShortcuts = [
@@ -47,14 +51,11 @@ const HeaderLink = ({name, href, divider}) =>
   </li>`;
 
 
-const Header = ({isMainPage, links}) =>
+const Header = ({links}) =>
   html`<header>
     <h1 class="amp-logo">
       ${ampLogo} AMP
     </h1>
-    <div class="right-of-logo">
-      ${htmlOptional(!isMainPage, HeaderBackToMainLink())}
-    </div>
     <!-- Hamburger button and sidebar displayed on small viewports -->
     <ul class="hide-on-large">
       <li class="burger icon-button"
@@ -73,7 +74,7 @@ const Header = ({isMainPage, links}) =>
           name,
           href,
         }))}
-      <li class="icon-button">${SettingsOpenButton()}</li>
+      <li class="icon-button">${SettingsModalOpenButton()}</li>
     </ul>
   </header>`;
 
@@ -85,7 +86,7 @@ const HeaderFallbackSidebarAccordionSection = ({heading, content, isDefault}) =>
   </section>`;
 
 
-const HeaderFallbackSidebar = ({isMainPage, links}) =>
+const HeaderFallbackSidebar = ({isMainPage, links, serveMode}) =>
   html`<amp-sidebar layout=nodisplay id="header-sidebar" side=right>
     <div class="close">
       <a class="icon-button"
@@ -97,7 +98,8 @@ const HeaderFallbackSidebar = ({isMainPage, links}) =>
     </div>
     <amp-accordion expand-single-section
         disable-session-states
-        id="header-accordion">
+        id="header-accordion"
+        animate>
       ${joinFragments([
         HeaderFallbackSidebarAccordionSection({
           isDefault: true,
@@ -114,7 +116,7 @@ const HeaderFallbackSidebar = ({isMainPage, links}) =>
         })),
         HeaderFallbackSidebarAccordionSection({
           heading: 'Settings',
-          content: html`<div></div>`,
+          content: SettingsBlock({serveMode}),
         }),
       ])}
     </amp-accordion>
@@ -122,10 +124,6 @@ const HeaderFallbackSidebar = ({isMainPage, links}) =>
       ${builtWithLove}
     </footer>
   </amp-sidebar>`;
-
-
-const HeaderBackToMainLink = () => html`
-    <a href="/" class="show-on-large">← Back to main</a>`;
 
 
 const SvgDefs = symbols => html`
@@ -175,12 +173,12 @@ function renderTemplate(opt_params) {
   const body = joinFragments([
     // Undisplayed content first.
     SvgDefs([ampLogoSymbol]),
-    HeaderFallbackSidebar({isMainPage, links: headerLinks}),
+    HeaderFallbackSidebar({isMainPage, links: headerLinks, serveMode}),
     SettingsModal({serveMode}),
 
     html`<div class="header-sticky">
       <div class="wrap">
-        ${Header({isMainPage, links: headerLinks})}
+        ${Header({links: headerLinks})}
       </div>
     </div>`,
 

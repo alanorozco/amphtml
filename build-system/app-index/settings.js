@@ -27,7 +27,7 @@ const serveModes = [
   {
     value: 'compiled',
     description: `Minified AMP JavaScript is served from the local server. This
-      is only available after running \`gulp dist--fortesting \`.`,
+      is only available after running <code>gulp dist--fortesting</code>`,
   },
   {
     value: 'cdn',
@@ -46,15 +46,22 @@ const SelectorBlock = ({id, value, selected, children}) => html`
   </div>`;
 
 
-const ServeModeSelector = ({serveMode}) => html`
-  <form
+let serveModeFormId = 0;
+const ServeModeSelector = ({serveMode}) => {
+  // Generate a uid since the form can be included multiple times in one
+  // doc. This has the unfortunate side effect that multiple `amp-selectors`
+  // will not share state, but since only one can be displayed at a time by
+  // media queries, noticing an unsynchronized state should be rare.
+  // TODO(alanorozco): Figure out a better solution.
+  const id = `serve-mode-form-${serveModeFormId++}`;
+  return html`<form
     action="/serve_mode_change"
     action-xhr="/serve_mode_change"
     target="_blank"
-    id="serve-mode-form">
+    id="${id}">
     <amp-selector
       layout="container"
-      on="select:serve-mode-form.submit"
+      on="select: ${id}.submit"
       name="mode">
       ${joinFragments(serveModes, ({value, description}) =>
         SelectorBlock({
@@ -66,9 +73,10 @@ const ServeModeSelector = ({serveMode}) => html`
         }))}
     </amp-selector>
   </form>`;
+};
 
 
-const SettingsOpenButton = () => html`<div
+const SettingsModalOpenButton = () => html`<div
     on="tap: settings-modal.open"
     role="button"
     tabindex="0"
@@ -83,6 +91,13 @@ const SettingsCloseButton = () => html`<div
     tabindex="1"
     class="close-icon icon">
     Close Settings
+  </div>`;
+
+
+const SettingsBlock = ({serveMode}) =>
+  html`<div>
+    <h4>JavaScript Serve Mode</h4>
+    ${ServeModeSelector({serveMode})}
   </div>`;
 
 
@@ -102,11 +117,10 @@ const SettingsModal = ({serveMode}) => html`<amp-lightbox
     <div class="settings-modal-content">
       <div class="wrap settings-modal-main">
         <h3>Settings</h3>
-        <h4>JavaScript Serve Mode</h4>
-        ${ServeModeSelector({serveMode})}
+        ${SettingsBlock({serveMode})}
       </div>
     </div>
   </amp-lightbox>`;
 
 
-module.exports = {SettingsModal, SettingsOpenButton};
+module.exports = {SettingsModal, SettingsModalOpenButton, SettingsBlock};

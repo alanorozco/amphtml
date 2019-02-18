@@ -80,6 +80,7 @@ body > footer {
   font-weight: bold;
   font-size: 18px;
   letter-spacing: 2px;
+  flex: 1;
 }
 .amp-logo > .apnf {
   height: 30px;
@@ -412,11 +413,15 @@ a.underlined {
   top: -54px; /* negative of top-level header's height */
 }
 
-.file-list-heading {
+.file-list-heading-inner {
   display: flex;
   flex-wrap: wrap;
   justify-content: end;
   align-items: center;
+  position: relative;
+}
+
+.file-list-heading {
   padding-top: 20px;
   margin-bottom: 40px;
   position: sticky;
@@ -450,6 +455,7 @@ a.underlined {
 
 .file-list-search {
   flex: 1;
+  flex-shrink: 2;
   font-size: 18px; /* same as .file-list-heading */
   padding: 6px 0;
   font-weight: normal;
@@ -458,13 +464,45 @@ a.underlined {
   background: transparent;
   margin: 0 20px 0 8px;
   min-width: 0;
+  box-sizing: border-box;
+}
+
+.file-list-search-cover {
+  pointer-events: none;
+  position: absolute;
+  top: 0;
+  bottom: 0;
 }
 
 @media (max-width: 400px) {
-  h3,
   .file-list-search {
-    font-size: 16px;
+    border-color: transparent;
   }
+  .file-list-search-cover { /* cover placeholder */
+    background: #f5f5fa;
+  }
+  .file-list-search:focus + .file-list-search-cover {
+    display: none;
+  }
+  /* TODO(alanorozco): Instead of hacking this behavior, achieve it with
+    `show()` and `autofocus` once #20687 makes it to prod. */
+  .file-list-search:focus {
+    position: absolute;
+    left: -8px;
+    width: 100%;
+    top: 1px; /* align with unfocused static positioning */
+    background: #f5f5fa;
+  }
+}
+
+amp-sidebar .selector-block {
+  padding: 12px 20px 12px 48px;
+  margin: 0 -20px;
+  border-radius: 0;
+}
+
+amp-sidebar .selector-block > p {
+  display: none;
 }
 
 .file-list-search:focus {
@@ -487,6 +525,7 @@ a.underlined {
   display: flex;
   flex-wrap: wrap;
   min-height: initial;
+  align-items: flex-end;
   justify-content: space-between;
 }
 
@@ -495,6 +534,11 @@ a.underlined {
   bottom: 0;
   left: 0;
   right: 0;
+}
+
+.file-list-category > h3 {
+  margin: 20px 0 0;
+  padding: 0 0 0 12px; /* left same as .file-link */
 }
 
 .file-link-container {
@@ -555,10 +599,6 @@ header .settings-cog-icon {
   z-index: 100;
   box-shadow: 0 2px 10px 0 rgba(0, 0, 0, .07);
 }
-.right-of-logo {
-  flex: 1;
-  margin-left: 40px;
-}
 header > ul {
   display: flex;
   align-items: center;
@@ -599,6 +639,10 @@ header .burger {
 }
 
 @media (max-width: 800px) {
+  h3,
+  .file-list-search {
+    font-size: 16px;
+  }
   .show-on-large {
     display: none;
   }

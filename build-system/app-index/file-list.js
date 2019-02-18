@@ -20,7 +20,7 @@
 const documentModes = require('./document-modes');
 const {AmpState, ampStateKey, containsExpr} = require('./amphtml-helpers');
 const {appendQueryParamsToUrl, replaceLeadingSlash} = require('./url');
-const {html, joinFragments} = require('./html');
+const {html, htmlOptional, joinFragments} = require('./html');
 const {KeyValueOptions} = require('./form');
 
 
@@ -42,17 +42,18 @@ const FileListSearchInput = ({basepath}) =>
   // TODO(alanorozco): Duration param in scrollTo not respected, investigate.
   html`<input type="text"
     class="file-list-search"
-    placeholder="Fuzzy Search"
+    placeholder="Search"
     pattern="[a-zA-Z0-9-]+"
-    on="input-debounced: file-list-scroll-sentinel.scrollTo(duration=0),
-                         AMP.setState({
-                           ${endpointStateId}: {
-                             ${endpointStateKey}: '${endpoint({
-                               path: basepath,
-                               search: '',
-                             })}' + event.value,
-                           }
-                         })">`;
+    on="input-debounced:
+          file-list-scroll-sentinel.scrollTo(duration=0),
+          AMP.setState({
+            ${endpointStateId}: {
+              ${endpointStateKey}: '${endpoint({
+                path: basepath,
+                search: '',
+              })}' + event.value,
+            }
+          })">`;
 
 
 const ExamplesDocumentModeSelect = () => html`
@@ -110,15 +111,17 @@ const maybePrefixExampleDocHref = (basepath, name, selectModePrefix) =>
 
 const FileListHeading = ({basepath, selectModePrefix}) => html`
   <div class="file-list-heading">
-    <h3 id="basepath">
-      ${basepath}
-    </h3>
-    ${FileListSearchInput({basepath})}
-    <div class="file-list-right-section">
-      ${AmpState(selectModeStateId, {
-        [selectModeStateKey]: selectModePrefix,
-      })}
-      ${ExamplesSelectModeOptional({basepath, selectModePrefix})}
+    <div class="file-list-heading-inner">
+      <h3 id="basepath">
+        ${basepath}
+      </h3>
+      ${FileListSearchInput({basepath})}
+      <div class="file-list-right-section">
+        ${AmpState(selectModeStateId, {
+          [selectModeStateKey]: selectModePrefix,
+        })}
+        ${ExamplesSelectModeOptional({basepath, selectModePrefix})}
+      </div>
     </div>
   </div>`;
 
