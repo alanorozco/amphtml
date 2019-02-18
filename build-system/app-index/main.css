@@ -170,20 +170,24 @@ h3 {
   flex-direction: column;
 }
 
-#header-sidebar > amp-accordion {
+.header-sidebar-accordion-wrapper {
   flex: 1;
 }
 
-#header-sidebar amp-accordion > section {
+amp-sidebar > div:last-child { /* wtf is this empty div */
+  display: none;
+}
+
+.header-sidebar-accordion-wrapper > amp-accordion > section {
   border: 1px solid #ddd;
   border-width: 1px 0 0;
 }
 
-#header-sidebar amp-accordion > section:first-of-type  {
+.header-sidebar-accordion-wrapper > amp-accordion > section:first-of-type  {
   border-width: 0;
 }
 
-#header-sidebar amp-accordion > section > h3 {
+.header-sidebar-accordion-wrapper > amp-accordion > section > h3 {
   background: none;
   border: none;
   font-size: 16px;
@@ -191,11 +195,11 @@ h3 {
   line-height: inherit;
 }
 
-#header-sidebar amp-accordion > section > h3:focus {
+.header-sidebar-accordion-wrapper > amp-accordion > section > h3:focus {
   outline: none;
 }
 
-#header-sidebar amp-accordion > section > div {
+.header-sidebar-accordion-wrapper > amp-accordion > section > div {
   padding: 12px 20px; /* same as corresponding h2 */
 }
 

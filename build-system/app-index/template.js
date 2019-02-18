@@ -97,30 +97,32 @@ const HeaderFallbackSidebar = ({isMainPage, links, serveMode}) =>
         ×
       </a>
     </div>
-    <amp-accordion expand-single-section
-        disable-session-states
-        id="header-accordion"
-        animate>
-      ${joinFragments([
-        HeaderFallbackSidebarAccordionSection({
-          isDefault: true,
-          heading: 'Helpful links',
-          content: html`<ul class="sidebar-links">
-            ${joinFragments(links, HeaderLink)}
-          </ul>`,
-        }),
-        htmlOptional(isMainPage, HeaderFallbackSidebarAccordionSection({
-          heading: 'Load URL by proxy',
-          content: html`<div class="proxy-form-sidebar-container">
-            ${ProxyForm({label: null})}
-          </div>`,
-        })),
-        HeaderFallbackSidebarAccordionSection({
-          heading: 'Settings',
-          content: SettingsBlock({serveMode}),
-        }),
-      ])}
-    </amp-accordion>
+    <div class="header-sidebar-accordion-wrapper">
+      <amp-accordion expand-single-section
+          disable-session-states
+          id="header-accordion"
+          animate>
+        ${joinFragments([
+          HeaderFallbackSidebarAccordionSection({
+            isDefault: true,
+            heading: 'Helpful links',
+            content: html`<ul class="sidebar-links">
+              ${joinFragments(links, HeaderLink)}
+            </ul>`,
+          }),
+          htmlOptional(isMainPage, HeaderFallbackSidebarAccordionSection({
+            heading: 'Load URL by proxy',
+            content: html`<div class="proxy-form-sidebar-container">
+              ${ProxyForm({label: null})}
+            </div>`,
+          })),
+          HeaderFallbackSidebarAccordionSection({
+            heading: 'Settings',
+            content: SettingsBlock({serveMode}),
+          }),
+        ])}
+      </amp-accordion>
+    </div>
     <footer>
       ${builtWithLove}
     </footer>
