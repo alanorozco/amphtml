@@ -21,15 +21,16 @@
 
 const headerLinks = require('./header-links');
 const ProxyForm = require('./proxy-form');
-const {AmpDoc, addRequiredExtensionsToHead} = require('./amphtml-helpers');
-const {ampLogo, ampLogoSymbol} = require('./amp-logo-svg');
-const {FileList} = require('./file-list');
-const {html, htmlOptional, joinFragments} = require('./html');
 const {
   SettingsBlock,
   SettingsModal,
   SettingsModalOpenButton,
 } = require('./settings');
+const {addRequiredExtensionsToHead, AmpDoc} = require('./amphtml-helpers');
+const {ampLogo, ampLogoSymbol} = require('./amp-logo-svg');
+const {FileList} = require('./file-list');
+const {html, htmlOptional, joinFragments} = require('./html');
+
 
 
 const listingShortcuts = [
