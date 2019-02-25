@@ -21,13 +21,14 @@ import {
   computedStyle,
   getStyle,
   getVendorJsPropertyName,
+  px,
   setImportantStyles,
   setInitialDisplay,
   setStyle,
   setStyles,
   toggle,
 } from '../style';
-import {dev, user} from '../log';
+import {dev, devAssert, user} from '../log';
 import {endsWith} from '../string';
 import {isExperimentOn} from '../experiments';
 
@@ -251,35 +252,58 @@ export class FixedLayer {
   /**
    * Apply or reset transform style to fixed elements. The existing transition,
    * if any, is disabled when custom transform is supplied.
-   * @param {?string} transform
+   * @param {string=} opt_transform
+   * @param {!Element=} opt_element
    */
-  transformMutate(transform) {
+  transformMutate(opt_transform, opt_element) {
+    // Apply transform style to all fixed elements, unless specified.
+    // Ignores `independent` elements unless specified.
     // Unfortunately, we can't do anything with sticky elements here. Updating
     // `top` in animation frames causes reflow on all platforms and we can't
     // determine whether an element is currently docked to apply transform.
-    if (transform) {
-      // Apply transform style to all fixed elements
-      this.elements_.forEach(e => {
-        if (e.fixedNow && e.top) {
-          setStyle(e.element, 'transition', 'none');
-          if (e.transform && e.transform != 'none') {
-            setStyle(e.element, 'transform', e.transform + ' ' + transform);
-          } else {
-            setStyle(e.element, 'transform', transform);
-          }
-        }
+    this.elements_.forEach(({
+      top,
+      fixedNow,
+      element,
+      transform,
+      independent,
+    }) => {
+      if (!fixedNow || (!top && !independent)) {
+        return;
+      }
+      if (independent && !opt_element) {
+        return;
+      }
+      if (opt_element && opt_element != element) {
+        return;
+      }
+      const combinedTransform =
+        opt_transform && transform && transform != 'none' ?
+          `${transform} ${opt_transform}` :
+          opt_transform || '';
+      setStyles(element, {
+        transform: combinedTransform,
+        transition: '',
       });
-    } else {
-      // Reset transform style to all fixed elements
-      this.elements_.forEach(e => {
-        if (e.fixedNow && e.top) {
-          setStyles(e.element, {
-            transform: '',
-            transition: '',
-          });
-        }
-      });
-    }
+    });
+  }
+
+  /**
+   * @param {!Element} element
+   */
+  setIndependent(element) {
+    devAssert(this.getFe_(element, 'fixed')).independent = true;
+  }
+
+  /**
+   * @param {!Element} element
+   * @param {string} position 'sticky' or 'fixed'
+   * @return {!ElementDef}
+   * @private
+   */
+  getFe_(element, position) {
+    return this.elements_.find(el =>
+      el.element == element && el.position == position);
   }
 
   /**
@@ -387,11 +411,14 @@ export class FixedLayer {
         // large value (to catch cases where sticky-tops are in a long way
         // down inside a scroller).
         for (let i = 0; i < elements.length; i++) {
-          setImportantStyles(elements[i].element, {
-            top: '',
-            bottom: '-9999vh',
-            transition: 'none',
-          });
+          const fe = elements[i];
+          if (!fe.independent) {
+            setImportantStyles(fe.element, {
+              top: '',
+              bottom: '-9999vh',
+              transition: 'none',
+            });
+          }
         }
         // 2. Capture the `style.top` with this new `style.bottom` value. If
         // this element has a non-auto top, this value will remain constant
@@ -401,7 +428,10 @@ export class FixedLayer {
         }
         // 3. Cleanup the `style.bottom`.
         for (let i = 0; i < elements.length; i++) {
-          setStyle(elements[i].element, 'bottom', '');
+          const fe = elements[i];
+          if (!fe.independent) {
+            setStyle(fe.element, 'bottom', '');
+          }
         }
 
         for (let i = 0; i < elements.length; i++) {
@@ -502,7 +532,7 @@ export class FixedLayer {
           // make the transition active.
           setStyle(fe.element, 'transition', '');
 
-          if (feState) {
+          if (feState && !fe.independent) {
             this.mutateElement_(fe, i, feState);
           }
         }
@@ -510,6 +540,25 @@ export class FixedLayer {
     }, {}).catch(error => {
       // Fail silently.
       dev().error(TAG, 'Failed to mutate fixed elements:', error);
+    });
+  }
+
+  /**
+   * @param {!Element} element
+   * @param {number} top
+   * @param {string} position
+   */
+  updateIndependent(element, top, position) {
+    devAssert(position == 'fixed');
+
+    const fe = this.getFe_(element, position);
+
+    devAssert(fe.independent);
+
+    fe.top = px(top);
+
+    return this.vsync_.mutatePromise(() => {
+      setStyle(element, 'top', fe.top);
     });
   }
 
@@ -599,14 +648,7 @@ export class FixedLayer {
       return;
     }
 
-    let fe = null;
-    for (let i = 0; i < this.elements_.length; i++) {
-      const el = this.elements_[i];
-      if (el.element == element && el.position == position) {
-        fe = el;
-        break;
-      }
-    }
+    let fe = this.getFe_(element, position);
     const isFixed = position == 'fixed';
     if (fe) {
       if (!fe.selectors.includes(selector)) {
@@ -780,6 +822,7 @@ export class FixedLayer {
  *   top: (string|undefined),
  *   transform: (string|undefined),
  *   forceTransfer: (boolean|undefined),
+ *   independent: (boolean|undefined),
  * }}
  */
 let ElementDef;

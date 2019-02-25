@@ -62,6 +62,9 @@ export class ScrollToggleDispatch {
 
     /** @private {boolean} */
     this.isShown_ = true;
+
+    /** @private {boolean} */
+    this.isEnabled_ = true;
   }
 
   /** @param {function(boolean)} handler Takes whether the element is shown. */
@@ -74,6 +77,9 @@ export class ScrollToggleDispatch {
   init_() {
     const viewport = Services.viewportForDoc(this.ampdoc_);
     viewport.onScroll(() => {
+      if (!this.isEnabled_) {
+        return;
+      }
       this.onScroll_(viewport.getScrollTop());
     });
   }
@@ -126,11 +132,21 @@ export class ScrollToggleDispatch {
    * @private
    */
   toggle_(isShown) {
+    if (!this.isEnabled_) {
+      return;
+    }
     if (this.isShown_ == isShown) {
       return;
     }
     this.isShown_ = isShown;
     this.observable_.fire(isShown);
+  }
+
+  /**
+   * @param {boolean} isEnabled
+   */
+  enable(isEnabled) {
+    this.isEnabled_ = isEnabled;
   }
 }
 
@@ -203,6 +219,75 @@ export function getScrollTogglePosition(element, type, computedStyle) {
  */
 export function installScrollToggleStyles(element) {
   setImportantStyles(element, {'will-change': 'transform'});
+}
+
+/**
+ * @param {!Element} element
+ * @param {boolean} isShown
+ * @param {!ScrollTogglePosition} position
+ */
+function scrollToggle(element, isShown, position) {
+  let offset = 0;
+
+  const measure = () => {
+    offset = getScrollToggleFloatInOffset(element, isShown, position);
+  };
+
+  const mutate = () => {
+    scrollToggleFloatIn(element, offset);
+  };
+
+  Services.resourcesForDoc(element)
+      .measureMutateElement(element, measure, mutate);
+}
+
+/**
+ * MUST be done inside mutate phase.
+ * @param {!ScrollToggleDispatch} dispatch
+ * @param {!Element} element
+ * @param {!ScrollTogglePosition} position
+ */
+export function installScrollToggleFloatIn(dispatch, element, position) {
+  installScrollToggleStyles(element);
+
+  const viewport = Services.viewportForDoc(element);
+  const resources = Services.resourcesForDoc(element);
+
+  dispatch.observe(isShown => {
+    scrollToggle(element, isShown, position);
+  });
+
+  if (viewport.getPaddingTop() > 0) {
+    // Disable own logic to depend on the viewport service.
+    dispatch.enable(false);
+  }
+
+  viewport.setIndependentOffset(element, (prevPaddingTop, paddingTop) => {
+    if (paddingTop > 0) {
+      // Disable own logic to depend on the viewport service.
+      dispatch.enable(false);
+    }
+
+    const isShown = paddingTop > 0;
+
+    let hiddenOffset;
+
+    return resources.measureElement(() => {
+      hiddenOffset =
+        getScrollToggleFloatInOffset(element, /* isShown */ false, position);
+    }).then(() => {
+      if (position == ScrollTogglePosition.TOP) {
+        if (isShown) {
+          return {animOffset: hiddenOffset - paddingTop, top: paddingTop};
+        }
+        return {animOffset: paddingTop - hiddenOffset, top: hiddenOffset};
+      }
+      if (isShown) {
+        return {animOffset: hiddenOffset, bottom: 0};
+      }
+      return {animOffset: -hiddenOffset, bottom: -hiddenOffset};
+    });
+  });
 }
 
 /**
