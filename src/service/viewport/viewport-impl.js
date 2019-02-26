@@ -215,19 +215,20 @@ export class Viewport {
     this.updateVisibility_();
 
     // Top-level mode classes.
+    const {documentElement} = this.globalDoc_;
     if (this.ampdoc.isSingleDoc()) {
-      this.globalDoc_.documentElement.classList.add('i-amphtml-singledoc');
+      documentElement.classList.add('i-amphtml-singledoc');
     }
     if (viewer.isEmbedded()) {
-      this.globalDoc_.documentElement.classList.add('i-amphtml-embedded');
+      documentElement.classList.add('i-amphtml-embedded');
     } else {
-      this.globalDoc_.documentElement.classList.add('i-amphtml-standalone');
+      documentElement.classList.add('i-amphtml-standalone');
     }
     if (isIframed(this.ampdoc.win)) {
-      this.globalDoc_.documentElement.classList.add('i-amphtml-iframed');
+      documentElement.classList.add('i-amphtml-iframed');
     }
     if (viewer.getParam('webview') === '1') {
-      this.globalDoc_.documentElement.classList.add('i-amphtml-webview');
+      documentElement.classList.add('i-amphtml-webview');
     }
 
     // To avoid browser restore scroll position when traverse history
