@@ -65,13 +65,12 @@ export function installScrollToggledFx(ampdoc, element, type) {
   const dispatch = getServiceForDoc(ampdoc, fxScrollDispatch);
 
   let shouldMutate = true;
-  let position = ScrollTogglePosition.TOP;
+  let position;
 
   const measure = () => {
     const computed = computedStyle(ampdoc.win, element);
-    const isValid = assertValidScrollToggleElement(element, computed);
-
     position = devAssert(getScrollTogglePosition(element, type, computed));
+    const isValid = assertValidScrollToggleElement(element, position, computed);
 
     if (!position || !isValid) {
       shouldMutate = false;
