@@ -178,7 +178,7 @@ export class Viewport {
     /** @private {string|undefined} */
     this.originalViewportMetaString_ = undefined;
 
-    /** @private {!Array<{element: !Element, callback: !OffsetCallbackDef}>} */
+    /** @private {!Array<{element: !Element, callback: !IndependentOffsetCallbackDef}>} */
     this.independentOffsets_ = [];
 
     /** @private @const {boolean} */
@@ -1036,7 +1036,7 @@ export class Viewport {
    * @param {!Element} element
    * @param {!IndependentOffsetCallbackDef} callback
    */
-  setIndependentOffset(element, callback) {
+  setIndependentFixedOffset(element, callback) {
     this.fixedLayer_.setIndependent(element);
     this.independentOffsets_.push({element, callback});
   }
@@ -1088,7 +1088,7 @@ export class Viewport {
   /**
    * @param {number} offset
    * @param {number} duration
-   * @param {number} curve
+   * @param {string} curve
    * @param {!Element=} opt_element
    * @return {!Promise}
    * @private

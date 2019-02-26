@@ -45,11 +45,14 @@ export class ScrollToggleDispatch {
     /** @private @const {!../../../src/service/ampdoc-impl.AmpDoc} */
     this.ampdoc_ = ampdoc;
 
-    /** @private @const {!Observable<boolean>} */
-    this.observable_ = new Observable();
-
     /** @private @const {function()} */
     this.initOnce_ = once(() => this.init_());
+
+    /** @private {?Observable<boolean>} */
+    this.observable_ = new Observable();
+
+    /** @private {?UnlistenDef} */
+    this.unlistener_ = null;
 
     /**
      * The last scroll position at which the header was shown or hidden.
@@ -76,7 +79,7 @@ export class ScrollToggleDispatch {
   /** @private */
   init_() {
     const viewport = Services.viewportForDoc(this.ampdoc_);
-    viewport.onScroll(() => {
+    this.unlistener_ = viewport.onScroll(() => {
       if (!this.isEnabled_) {
         return;
       }
@@ -139,14 +142,22 @@ export class ScrollToggleDispatch {
       return;
     }
     this.isShown_ = isShown;
-    this.observable_.fire(isShown);
+    devAssert(this.observable_).fire(isShown);
   }
 
   /**
-   * @param {boolean} isEnabled
+   * This is final.
    */
-  enable(isEnabled) {
-    this.isEnabled_ = isEnabled;
+  disable() {
+    if (!this.isEnabled_) {
+      return;
+    }
+    if (this.unlistener_) {
+      this.unlistener_();
+    }
+    this.isEnabled_ = false;
+    this.observable_ = null; // GC
+    this.unlistener_ = null; // GC
   }
 }
 
@@ -251,42 +262,49 @@ export function installScrollToggleFloatIn(dispatch, element, position) {
   installScrollToggleStyles(element);
 
   const viewport = Services.viewportForDoc(element);
-  const resources = Services.resourcesForDoc(element);
 
-  dispatch.observe(isShown => {
-    scrollToggle(element, isShown, position);
-  });
-
-  if (viewport.getPaddingTop() > 0) {
-    // Disable own logic to depend on the viewport service.
-    dispatch.enable(false);
+  if (viewport.getPaddingTop() <= 0) {
+    dispatch.observe(isShown => {
+      scrollToggle(element, isShown, position);
+    });
   }
 
-  viewport.setIndependentOffset(element, (prevPaddingTop, paddingTop) => {
-    if (paddingTop > 0) {
-      // Disable own logic to depend on the viewport service.
-      dispatch.enable(false);
-    }
-
-    const isShown = paddingTop > 0;
-
-   const hiddenOffset =
-      getScrollToggleFloatInOffset(element, /* isShown */ false, position);
-
-    // TOP
-    if (position == ScrollTogglePosition.TOP) {
-      if (isShown) {
-        return {animOffset: hiddenOffset - paddingTop, top: paddingTop};
-      }
-      return {animOffset: prevPaddingTop - hiddenOffset, top: hiddenOffset};
-    }
-
-    // BOTTOM
-    if (isShown) {
-      return {animOffset: hiddenOffset, bottom: 0};
-    }
-    return {animOffset: -hiddenOffset, bottom: -hiddenOffset};
+  viewport.setIndependentFixedOffset(element, (prevTop, top) => {
+    return calculateViewportOffset(dispatch, element, position, prevTop, top);
   });
+}
+
+/**
+ * MUST be done inside measure phase.
+ * @param {!ScrollToggleDispatch} dispatch
+ * @param {!Element} element
+ * @param {!ScrollTogglePosition} position
+ * @param {number} prevTop
+ * @param {number} top
+ * @return {!../../../src/service/viewport/viewport-impl.IndependentOffsetDef}
+ */
+function calculateViewportOffset(dispatch, element, position, prevTop, top) {
+  const isShown = top > 0;
+
+  // Disable scroll-dispatch logic to depend on the viewport service brokering
+  // padding top changes.
+  if (isShown) {
+    dispatch.disable();
+  }
+
+  const {height} = element./*OK*/getBoundingClientRect();
+
+  if (position == ScrollTogglePosition.TOP) {
+    if (isShown) {
+      return {top, animOffset: -(height + top)};
+    }
+    return {top: -height, animOffset: prevTop + height};
+  }
+
+  if (isShown) {
+    return {bottom: 0, animOffset: height};
+  }
+  return {bottom: -height, animOffset: -height};
 }
 
 /**

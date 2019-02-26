@@ -352,19 +352,24 @@ export class FixedLayer {
    * Offset definition is brokered through the viewport service.
    * @param {!Element} element
    */
-  setIndependent(element) {
+  setIsIndependent(element) {
     devAssert(this.getFe_(element, 'fixed')).independent = true;
   }
 
   /**
    * @param {!Element} element
    * @param {string} position 'sticky' or 'fixed'
-   * @return {!ElementDef}
+   * @return {?ElementDef}
    * @private
    */
   getFe_(element, position) {
-    return this.elements_.find(el =>
-      el.element == element && el.position == position);
+    for (let i = 0; i < this.elements_.length; i++) {
+      const fe = this.elements_[i];
+      if (fe.element == element && fe.position == position) {
+        return fe;
+      }
+    }
+    return null;
   }
 
   /**
@@ -612,7 +617,7 @@ export class FixedLayer {
 
   /**
    * Updates the `top` of an element with independently managed offset.
-   * See `setIndependent()`.
+   * See `setIsIndependent()`.
    * @param {!Element} element
    * @param {number} top
    * @param {string} position
