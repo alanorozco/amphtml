@@ -161,6 +161,8 @@ export class ScrollToggleDispatch {
   }
 }
 
+const withAmpFxType = type => `with amp-fx=${type}`;
+
 /**
  * MUST be done inside mutate phase.
  * @param {!Element} element
@@ -191,16 +193,17 @@ export function getScrollToggleFloatInOffset(element, isShown, position) {
   return offset;
 }
 
-
 /**
  * @param {!Element} element
+ * @param {string} type
  * @param {!Object<string, string>} computedStyle
  * @return {boolean}
  */
-export function assertValidScrollToggleElement(element, computedStyle) {
+export function assertValidScrollToggleElement(element, type, computedStyle) {
+  const suffix = withAmpFxType(type);
   return (
-    assertStyleOrWarn(computedStyle, 'overflow', 'hidden', element) &&
-    assertStyleOrWarn(computedStyle, 'position', 'fixed', element));
+    assertStyleOrWarn(computedStyle, 'overflow', 'hidden', element, suffix) &&
+    assertStyleOrWarn(computedStyle, 'position', 'fixed', element, suffix));
 }
 
 /**
@@ -217,7 +220,7 @@ export function getScrollTogglePosition(element, type, computedStyle) {
   // naming convention win:
   // position `top` should have `top: 0` and `bottom` should have `bottom: 0`
   if (!assertStyleOrWarn(
-      computedStyle, position, px(0), element, `amp-fx=${type}`)) {
+      computedStyle, position, px(0), element, withAmpFxType(type))) {
     return null;
   }
 
@@ -270,7 +273,8 @@ export function installScrollToggleFloatIn(dispatch, element, position) {
   }
 
   viewport.setIndependentFixedOffset(element, (prevTop, top) => {
-    return calculateViewportOffset(dispatch, element, position, prevTop, top);
+    return calculateFloatInViewportOffset(
+        dispatch, element, position, prevTop, top);
   });
 }
 
@@ -283,7 +287,9 @@ export function installScrollToggleFloatIn(dispatch, element, position) {
  * @param {number} top
  * @return {!../../../src/service/viewport/viewport-impl.IndependentOffsetDef}
  */
-function calculateViewportOffset(dispatch, element, position, prevTop, top) {
+function calculateFloatInViewportOffset(
+  dispatch, element, position, prevTop, top) {
+
   const isShown = top > 0;
 
   // Disable scroll-dispatch logic to depend on the viewport service brokering
@@ -315,70 +321,13 @@ function calculateViewportOffset(dispatch, element, position, prevTop, top) {
  * @param {string=} opt_suffix
  * @return {boolean}
  */
-function assertStyleOrWarn(
-  computed, prop, expected, element, opt_suffix) {
-
+function assertStyleOrWarn(computed, prop, expected, element, opt_suffix) {
   if (computed[prop] == expected) {
     return true;
   }
-  const suffix = opt_suffix ? ` ${opt_suffix}` : '';
-  const shorthand = elementShorthand(element);
+  const elementSuffix = opt_suffix ? ` ${opt_suffix}` : '';
   user().warn(TAG,
-      `FX element must have \`${prop}: ${expected}\` [${shorthand}]${suffix}.`);
+      'Element%s must have `%s: %s` style. %s',
+      elementSuffix, prop, expected, element);
   return false;
-}
-
-
-/**
- * Creates a human-readable shorthand for an element similar to a CSS selector.
- * e.g.
- *
- * elementShorthand(anElementWithId);
- *   // gives '#my-element-id'
- *
- * elementShorthand(divWithClassInAnotherDiv);
- *   // gives 'div > div.my-class'
- *
- * elementShorthand(divWithMultipleClassesInAnotherDiv);
- *   // gives 'div > div.my-class...'
- *
- * elementShorthand(firstChildH1InHeaderNoClassesOrIds);
- *   // gives 'header > h1:first-child'
- *
- * elementShorthand(onlyDivInBodyWithouIdOrClass);
- *   // gives 'body:last-child > div'
- *
- * elementShorthand(detachedDivOnlyInTestsProlly);
- *   // gives 'div (detached)'
- *
- * @param {!Element} element
- * @param {number=} depth
- * @return {string}
- */
-function elementShorthand(element, depth = 0) {
-  const {tagName, id, classList, parentElement} = element;
-  if (id) {
-    return `#${id}`;
-  }
-  const tagNameLower = tagName.toLowerCase();
-  let suffix = tagNameLower;
-  if (classList.length > 0) {
-    const ellipsis = classList.length > 1 ? '...' : '';
-    suffix += `.${classList[0]}${ellipsis}`;
-  }
-  if (!parentElement) {
-    return `${suffix} (detached)`;
-  }
-  const {firstElementChild, lastElementChild} = parentElement;
-  if (!(element == firstElementChild && element == lastElementChild)) {
-    if (element == firstElementChild) {
-      suffix += ':first-child';
-    } else if (element == lastElementChild) {
-      suffix += ':last-child';
-    }
-  }
-  if (depth > 0) {
-    return suffix;
-  }
-  return `${elementShorthand(parentElement, depth + 1)} > ${suffix}`;
 }

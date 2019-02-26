@@ -646,8 +646,7 @@ export class FixedLayer {
    * @param {boolean=} opt_lightboxMode
    * @private
    */
-  trySetupSelectorsNoInline(root, opt_lightboxMode
-  ) {
+  trySetupSelectorsNoInline(root, opt_lightboxMode) {
     try {
       this.setupSelectors_(root, opt_lightboxMode);
     } catch (e) {
@@ -664,23 +663,35 @@ export class FixedLayer {
    * @private
    */
   setupSelectors_(root, opt_lightboxMode) {
+    const fixedLimit = 10;
+    this.setupSelectorsByType_(
+        root, this.fixedSelectors_, 'fixed', opt_lightboxMode, fixedLimit);
+
+    this.setupSelectorsByType_(
+        root, this.stickySelectors_, 'sticky', opt_lightboxMode);
+  }
+
+  /**
+   * @param {!Node} root
+   * @param {!Array<string>} selectors
+   * @param {string} position 'fixed' or 'sticky'
+   * @param {boolean=} opt_lightboxMode
+   * @param {number=} opt_limit
+   * @private
+   */
+  setupSelectorsByType_(
+    root, selectors, position, opt_lightboxMode, opt_limit) {
+
+    devAssert(position == 'fixed' || position == 'sticky');
+
     for (let i = 0; i < this.fixedSelectors_.length; i++) {
-      const fixedSelector = this.fixedSelectors_[i];
-      const elements = root.querySelectorAll(fixedSelector);
-      for (let j = 0; j < elements.length; j++) {
-        if (this.elements_.length > 10) {
-          // We shouldn't have too many of `fixed` elements.
-          break;
-        }
-        this.setupElement_(elements[j], fixedSelector, 'fixed',
-            /* opt_forceTransfer */ undefined, opt_lightboxMode);
-      }
-    }
-    for (let i = 0; i < this.stickySelectors_.length; i++) {
-      const stickySelector = this.stickySelectors_[i];
-      const elements = root.querySelectorAll(stickySelector);
-      for (let j = 0; j < elements.length; j++) {
-        this.setupElement_(elements[j], stickySelector, 'sticky',
+      const elements = root.querySelectorAll(selectors[i]);
+      for (
+        let j = 0;
+        j < elements.length &&
+          (!opt_limit || this.elements_.length > opt_limit);
+        j++) {
+        this.setupElement_(elements[j], selectors[i], position,
             /* opt_forceTransfer */ undefined, opt_lightboxMode);
       }
     }
