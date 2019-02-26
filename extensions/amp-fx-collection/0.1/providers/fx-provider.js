@@ -126,8 +126,8 @@ export class FxElement {
     /** @const @private {!../../../../src/service/resources-impl.Resources} */
     this.resources_ = Services.resourcesForDoc(element);
 
-    /** @type {number} */
-    this.viewportHeight = this.viewport_.getHeight();
+    /** @type {?number} */
+    this.viewportHeight = null;
 
     /** @type {?number} */
     this.adjustedViewportHeight = null;
@@ -192,6 +192,7 @@ export class FxElement {
       this.observePositionChanges_();
     });
 
+    this.updateViewportHeight_();
   }
 
   /**
@@ -203,10 +204,17 @@ export class FxElement {
     );
 
     this.viewport_.onResize(() => {
+      this.updateViewportHeight_();
       this.getAdjustedViewportHeight_().then(adjustedViewportHeight => {
         this.adjustedViewportHeight = adjustedViewportHeight;
-        this.viewportHeight = this.viewport_.getHeight();
       });
+    });
+  }
+
+  /** @private	*/
+  updateViewportHeight_() {
+    this.resources_.measureElement(() => {
+      this.viewportHeight = this.viewport_.getHeight();
     });
   }
 
