@@ -764,6 +764,8 @@ export const adConfig = {
     renderStartImplemented: true,
   },
 
+  'promoteiq': {},
+
   'pubexchange': {},
 
   'pubguru': {
@@ -954,6 +956,10 @@ export const adConfig = {
 
   'uas': {
     prefetch: 'https://ads.pubmatic.com/AdServer/js/phoenix.js',
+  },
+
+  'ucfunnel': {
+    renderStartImplemented: true,
   },
 
   'uzou': {

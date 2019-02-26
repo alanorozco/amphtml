@@ -42,6 +42,7 @@ function main() {
 
   if (!isTravisPullRequestBuild()) {
     downloadBuildOutput(FILENAME);
+    timedExecOrDie('gulp update-packages');
     timedExecOrDie('gulp test --integration --nobuild --coverage');
     timedExecOrDie('gulp test --unit --nobuild --headless --coverage');
     timedExecOrDie('gulp test --dev_dashboard --nobuild');
@@ -60,9 +61,10 @@ function main() {
           'because this commit not affect the runtime, build system, ' +
           'unit test files, integration test files, or the dev dashboard.');
       stopTimer(FILENAME, FILENAME, startTime);
-      return 0;
+      return;
     }
     downloadBuildOutput(FILENAME);
+    timedExecOrDie('gulp update-packages');
     if (buildTargets.has('RUNTIME') ||
         buildTargets.has('BUILD_SYSTEM') ||
         buildTargets.has('UNIT_TEST')) {
@@ -89,7 +91,6 @@ function main() {
   }
 
   stopTimer(FILENAME, FILENAME, startTime);
-  return 0;
 }
 
-process.exit(main());
+main();
