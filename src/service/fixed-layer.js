@@ -346,6 +346,10 @@ export class FixedLayer {
   }
 
   /**
+   * Specifies that an element is "independent", that is, it responds to
+   * `paddingTop` changes with its own set of offset rules.
+   *
+   * Offset definition is brokered through the viewport service.
    * @param {!Element} element
    */
   setIndependent(element) {
@@ -607,6 +611,8 @@ export class FixedLayer {
   }
 
   /**
+   * Updates the `top` of an element with independently managed offset.
+   * See `setIndependent()`.
    * @param {!Element} element
    * @param {number} top
    * @param {string} position

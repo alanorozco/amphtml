@@ -88,8 +88,8 @@ export let IndependentOffsetDef;
  * Params:
  *  - lastPaddingTop
  *  - paddingTop
- * Returns a promise with the offset definition.
- * @typedef {function(number, number):!Promise<!IndependentOffsetDef>}
+ * Returns the offset definition.
+ * @typedef {function(number, number):!IndependentOffsetDef}
  */
 export let IndependentOffsetCallbackDef;
 
@@ -1022,6 +1022,17 @@ export class Viewport {
   }
 
   /**
+   * Specifies that an element is "independent", that is, it responds to
+   * `paddingTop` changes with its own set of offset rules.
+   *
+   * `callback` runs in a measure phase and takes:
+   *  - lastPaddingTop
+   *  - paddingTop
+   *
+   * and returns an object with:
+   *  - animOffset: offset at start of animation. end will always be 0.
+   *  - top (optional): the final `top` of this element after transition
+   *  - bottom (optional): the final `bottom` of this element after transition
    * @param {!Element} element
    * @param {!IndependentOffsetCallbackDef} callback
    */
@@ -1045,7 +1056,8 @@ export class Viewport {
 
     // Calculate independent animation offsets and translate by that amount.
     const promises = this.independentOffsets_.map(({element, callback}) => {
-      const callbackPromise = callback(lastPaddingTop_, paddingTop_);
+      const callbackPromise = this.vsync_.measurePromise(() =>
+        callback(lastPaddingTop_, paddingTop_));
       return callbackPromise.then(({top, bottom, animOffset}) => {
         if (top !== undefined) {
           this.fixedLayer_.updateIndependent(element, top, 'fixed');

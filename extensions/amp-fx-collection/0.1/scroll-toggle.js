@@ -270,23 +270,22 @@ export function installScrollToggleFloatIn(dispatch, element, position) {
 
     const isShown = paddingTop > 0;
 
-    let hiddenOffset;
+   const hiddenOffset =
+      getScrollToggleFloatInOffset(element, /* isShown */ false, position);
 
-    return resources.measureElement(() => {
-      hiddenOffset =
-        getScrollToggleFloatInOffset(element, /* isShown */ false, position);
-    }).then(() => {
-      if (position == ScrollTogglePosition.TOP) {
-        if (isShown) {
-          return {animOffset: hiddenOffset - paddingTop, top: paddingTop};
-        }
-        return {animOffset: paddingTop - hiddenOffset, top: hiddenOffset};
-      }
+    // TOP
+    if (position == ScrollTogglePosition.TOP) {
       if (isShown) {
-        return {animOffset: hiddenOffset, bottom: 0};
+        return {animOffset: hiddenOffset - paddingTop, top: paddingTop};
       }
-      return {animOffset: -hiddenOffset, bottom: -hiddenOffset};
-    });
+      return {animOffset: prevPaddingTop - hiddenOffset, top: hiddenOffset};
+    }
+
+    // BOTTOM
+    if (isShown) {
+      return {animOffset: hiddenOffset, bottom: 0};
+    }
+    return {animOffset: -hiddenOffset, bottom: -hiddenOffset};
   });
 }
 
