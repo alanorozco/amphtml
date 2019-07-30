@@ -12,8 +12,6 @@ Metrics
   
 </summary>
 
- 
-
 [![Absolute Code Coverage](https://img.shields.io/endpoint.svg?logo=Codecov&logoColor=white&style=flat-square&url=https%3A%2F%2Famp-project-metrics.appspot.com%2Fapi%2Fbadge%2FAbsoluteCoverageMetric "Test coverage for the repository as computed by CodeCov")](https://codecov.io/gh/ampproject/amphtml/)
 [![Presubmit Latency](https://img.shields.io/endpoint.svg?logo=Travis%20CI&logoColor=white&style=flat-square&url=https%3A%2F%2Famp-project-metrics.appspot.com%2Fapi%2Fbadge%2FPresubmitLatencyMetric "Average Travis build time over the last 90 days")](https://travis-ci.org/ampproject/amphtml/builds)
 [![Release Cherrypick Count](https://img.shields.io/endpoint.svg?logo=GitHub&logoColor=white&style=flat-square&url=https%3A%2F%2Famp-project-metrics.appspot.com%2Fapi%2Fbadge%2FReleaseCherrypickCountMetric "Number of cherry-picks in releases over the last 90 days")](https://github.com/ampproject/amphtml/issues?utf8=%E2%9C%93&q=is%3Aissue+title%3A+%22Cherry-pick%22)
@@ -27,8 +25,6 @@ Metrics
 Tooling
 
 </summary>
-
- 
 
 [![Percy](https://img.shields.io/badge/%F0%9F%A6%94%20visual%20testing-Percy-violet.svg?style=flat-square "Percy")](https://percy.io/ampproject/amphtml)
 [![Prettier](https://img.shields.io/badge/code_style-Prettier-ff69b4.svg?logo=Prettier&logoColor=white&style=flat-square "Prettier")](https://github.com/prettier/prettier)
