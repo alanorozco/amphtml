@@ -1,15 +1,17 @@
 # AMP ⚡
 
-[![Badges](https://img.shields.io/badge/badges-15-brightgreen?logo=GitHub&style=flat-square)](#)
-
 [![Build Status](https://img.shields.io/travis/ampproject/amphtml/master.svg?logo=Travis%20CI&logoColor=white&style=flat-square "Build Status")](https://travis-ci.org/ampproject/amphtml/builds)
 [![GitHub Release](https://img.shields.io/github/release/ampproject/amphtml.svg?logo=GitHub&style=flat-square "GitHub Release")](https://github.com/ampproject/amphtml/releases)
 [![Contributors](https://img.shields.io/github/contributors-anon/ampproject/amphtml.svg?logo=GitHub&style=flat-square "Contributors")](https://github.com/ampproject/amphtml/graphs/contributors)
 [![Commits](https://img.shields.io/github/commit-activity/m/ampproject/amphtml.svg?logo=GitHub&style=flat-square "Commits")](https://github.com/ampproject/amphtml/pulse/monthly)
 
+[![Badges](https://img.shields.io/badge/badges-15-brightgreen?logo=GitHub&style=flat-square)](#)
+
 <details>
 <summary>
+  
 Metrics
+  
 </summary>
 
 [![Absolute Code Coverage](https://img.shields.io/endpoint.svg?logo=Codecov&logoColor=white&style=flat-square&url=https%3A%2F%2Famp-project-metrics.appspot.com%2Fapi%2Fbadge%2FAbsoluteCoverageMetric "Test coverage for the repository as computed by CodeCov")](https://codecov.io/gh/ampproject/amphtml/)
@@ -22,7 +24,9 @@ Metrics
 
 <details>
 <summary>
+  
 Tooling
+
 </summary>
 
 [![Percy](https://img.shields.io/badge/%F0%9F%A6%94%20visual%20testing-Percy-violet.svg?style=flat-square "Percy")](https://percy.io/ampproject/amphtml)
