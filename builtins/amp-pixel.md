@@ -1,3 +1,12 @@
+---
+$category: ads-analytics
+formats:
+  - websites
+  - ads
+  - stories
+teaser:
+  text: A tracking pixel to count page views.
+---
 <!---
 Copyright 2015 The AMP HTML Authors. All Rights Reserved.
 
@@ -24,12 +33,12 @@ limitations under the License.
     <td>Can be used as a typical tracking pixel to count pageviews.</td>
   </tr>
   <tr>
-    <td class="col-fourty"><strong><a href="https://www.ampproject.org/docs/guides/responsive/control_layout.html">Supported Layouts</a></strong></td>
+    <td class="col-fourty"><strong><a href="https://amp.dev/documentation/guides-and-tutorials/develop/style_and_layout/control_layout">Supported Layouts</a></strong></td>
     <td>fixed, nodisplay</td>
   </tr>
   <tr>
     <td class="col-fourty"><strong>Examples</strong></td>
-    <td>See AMP By Example's <a href="https://ampbyexample.com/components/amp-pixel/">amp-pixel example</a>.</td>
+    <td>See AMP By Example's <a href="https://amp.dev/documentation/examples/components/amp-pixel/">amp-pixel example</a>.</td>
   </tr>
 </table>
 
@@ -43,6 +52,11 @@ In this basic example, the `amp-pixel` issues a simple GET request to the given 
 <amp-pixel src="https://foo.com/tracker/foo"
     layout="nodisplay"></amp-pixel>
 ```
+
+{% call callout('Note', type='note') %}
+When processing AMP URLs in the referrer header of analytics requests, strip out or ignore the `usqp` parameter. This parameter is used by Google to trigger experiments for the Google AMP Cache.
+{% endcall %}
+
 
 ## Attributes
 
@@ -59,9 +73,18 @@ This attribute is similar to the `referrerpolicy` attribute on `<img>`, however 
     layout="nodisplay"
     referrerpolicy="no-referrer"></amp-pixel>
 ```
+
+##### allow-ssr-img (optional)
+
+This attribute used in AMP4ADS creatives indicates that as part of post validation
+transformation, an img element may be placed directly within the amp-pixel
+element allowing the ping to be sent in parallel with AMP runtime fetch/execution.
+Note that it means that any macros within the url will NOT be expanded so only
+use if they are not present in the src.
+
 ##### common attributes
 
-This element includes [common attributes](https://www.ampproject.org/docs/reference/common_attributes) extended to AMP components.
+This element includes [common attributes](https://amp.dev/documentation/guides-and-tutorials/learn/common_attributes) extended to AMP components.
 
 ## Substitutions
 

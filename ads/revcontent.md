@@ -19,7 +19,7 @@ limitations under the License.
 ## Example
 
 ```html
-<amp-ad width="400" height="260" layout="responsive" 
+<amp-ad width="400" height="260" layout="responsive"
       type="revcontent"
       heights="(max-width: 320px) 933px,
       (max-width: 360px) 1087px,
@@ -42,15 +42,18 @@ limitations under the License.
 
 ## Configuration
 
-For semantics of configuration, please see [ad network documentation](http://faq.revcontent.com/support/solutions/5000137293).
+For semantics of configuration, please see [Revcontent's documentation](https://faq.revcontent.com/).
 
 Supported parameters:
 
-- data-id
-- data-wrapper
-- data-endpoint
-- data-ssl
-- data-testing
+- `data-id`
+- `data-revcontent`
+- `data-env`
+- `data-wrapper`
+- `data-endpoint`
+- `data-ssl`
+- `data-testing`
+- `data-loadscript`
 
 ## Auto-sizing of Ads
 

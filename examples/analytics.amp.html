@@ -29,167 +29,178 @@
 <div id="container">
 Container for analytics tags. Positioned far away from top to make sure that doesn't matter.
 
+<amp-analytics>
+  <script type="application/json">
+    {
+      "requests": {
+        "endpoint": "/analytics/no-referrer"
+      },
+      "triggers": {
+        "pageview": {
+          "on": "visible",
+          "request": "endpoint"
+        }
+      },
+      "transport": {
+        "referrerPolicy": "no-referrer"
+      }
+    }
+  </script>
+</amp-analytics>
 <amp-analytics id="analytics1">
-<script type="application/json">
-{
-  "transport": {"beacon": false, "xhrpost": false},
-  "requests": {
-    "endpoint": "https://raw.githubusercontent.com/ampproject/amphtml/master/examples/img/ampicon.png",
-    "base": "${endpoint}?${type|default:foo}&path=${canonicalPath}",
-    "event": "${base}&scrollY=${scrollTop}&scrollX=${scrollLeft}&height=${availableScreenHeight}&width=${availableScreenWidth}&scrollBoundV=${verticalScrollBoundary}&scrollBoundH=${horizontalScrollBoundary}",
-    "visibility": "${base}&a=${maxContinuousVisibleTime}&b=${totalVisibleTime}&c=${firstSeenTime}&d=${lastSeenTime}&e=${firstVisibleTime}&f=${lastVisibleTime}&g=${minVisiblePercentage}&h=${maxVisiblePercentage}&i=${elementX}&j=${elementY}&k=${elementWidth}&l=${elementHeight}&m=${totalTime}&n=${loadTimeVisibility}&o=${backgroundedAtStart}&p=${backgrounded}&subTitle=${subTitle}",
-    "timer": "${base}&backgroundState=${backgroundState}",
-    "video": "${base}&type=${type}&currentTime=${currentTime}&f=${fullscreen}&a=${autoplay}"
-  },
-  "vars": {
-    "title": "Example Request"
-  },
-  "extraUrlParams": {
-    "param1": "${random}",
-    "platform": "AMP"
-  },
-  "extraUrlParamsReplaceMap": {
-    "param": "p"
-  },
-  "triggers": {
-    "defaultPageview": {
-      "on": "visible",
-      "request": "base",
-      "vars": {
-        "type": "pageLoad"
+  <script type="application/json">
+  {
+    "transport": {"beacon": true, "xhrpost": false},
+    "requests": {
+      "endpoint": "/analytics",
+      "base": "${endpoint}/${type}?path=${canonicalPath}",
+      "event": "${base}&scrollY=${scrollTop}&scrollX=${scrollLeft}&height=${availableScreenHeight}&width=${availableScreenWidth}&scrollBoundV=${verticalScrollBoundary}&scrollBoundH=${horizontalScrollBoundary}",
+      "visibility": "${base}&a=${maxContinuousVisibleTime}&b=${totalVisibleTime}&c=${firstSeenTime}&d=${lastSeenTime}&e=${firstVisibleTime}&f=${lastVisibleTime}&g=${minVisiblePercentage}&h=${maxVisiblePercentage}&i=${elementX}&j=${elementY}&k=${elementWidth}&l=${elementHeight}&m=${totalTime}&n=${loadTimeVisibility}&o=${backgroundedAtStart}&p=${backgrounded}&subTitle=${subTitle}",
+      "timer": "${base}&backgroundState=${backgroundState}&timerStart=${timerStart}&duration=${timerDuration}",
+      "video": "${base}&type=${type}&currentTime=${currentTime}&f=${fullscreen}&a=${autoplay}"
+    },
+    "vars": {
+      "title": "Example Request"
+    },
+    "extraUrlParams": {
+      "param1": "${random}",
+      "platform": "AMP"
+    },
+    "extraUrlParamsReplaceMap": {
+      "param": "p"
+    },
+    "triggers": {
+      "pageview": {
+        "on": "visible",
+        "request": "base",
+        "vars": {
+          "type": "pageLoad"
+        },
+        "extraUrlParams": {
+          "param1": "Another value"
+        }
       },
-      "extraUrlParams": {
-        "param1": "Another value"
-      }
-    },
-    "pageview": {
-      "on": "visible",
-      "request": "base",
-      "vars": {
-        "type": "${random}${title}"
-      }
-    },
-    "visibility": {
-      "on": "visible",
-      "request": "visibility",
-      "selector": "#anim-id",
-      "visibilitySpec": {
-        "visiblePercentageMin": 20,
-        "visiblePercentageMax": 80,
-        "totalTimeMin": 5000,
-        "continuousTimeMin": 2000,
-        "waitFor": "ini-load"
-      },
-      "vars": {
-        "type": "visibility"
-      }
-    },
-    "hidden": {
-      "on": "hidden",
-      "request": "visibility",
-      "visibilitySpec": {
+      "visibility": {
+        "on": "visible",
+        "request": "visibility",
         "selector": "#anim-id",
-        "visiblePercentageMin": 20,
-        "visiblePercentageMin": 1000,
-        "continuousTimeMax": 5000
+        "visibilitySpec": {
+          "visiblePercentageMin": 20,
+          "visiblePercentageMax": 80,
+          "totalTimeMin": 5000,
+          "continuousTimeMin": 2000,
+          "waitFor": "ini-load"
+        },
+        "vars": {
+          "type": "visible"
+        }
       },
-      "vars": {
-        "type": "hidden"
-      }
-    },
-    "scrollPings": {
-      "on": "scroll",
-      "request": "event",
-      "scrollSpec": {
-        "verticalBoundaries" : [1, 50, 90],
-        "horizontalBoundaries": [100]
+      "hidden": {
+        "on": "hidden",
+        "request": "visibility",
+        "visibilitySpec": {
+          "selector": "#anim-id",
+          "visiblePercentageMin": 20,
+          "visiblePercentageMax": 1000,
+          "continuousTimeMax": 5000
+        },
+        "vars": {
+          "type": "hidden"
+        }
       },
-      "vars": {
-        "type": "scroll"
-      }
-    },
-    "clickPings": {
-      "on": "click",
-      "selector": "${img}",
-      "request": ["endpoint", "base"],
-      "vars": {
-        "type": "click",
-        "img": "#anim-id, #container"
-      }
-    },
-    "timer": {
-      "on": "timer",
-      "timerSpec": {
-        "interval": 5,
-        "maxTimerLength": 20
+      "scrollPings": {
+        "on": "scroll",
+        "request": "event",
+        "scrollSpec": {
+          "verticalBoundaries" : [1, 50, 90],
+          "horizontalBoundaries": [100]
+        },
+        "vars": {
+          "type": "scroll"
+        }
       },
-      "request": "timer",
-      "vars": {
-        "type": "timer"
-      }
-    },
-    "videoPlays": {
-      "on": "video-play",
-      "selector": "#myVideo",
-      "videoSpec": {
-        "exclude-autoplay": true
+      "clickPings": {
+        "on": "click",
+        "selector": "${img}",
+        "request": ["endpoint", "base"],
+        "vars": {
+          "type": "click",
+          "img": "#anim-id, #container"
+        }
       },
-      "request": "video",
-      "vars": {
-        "type": "video-play"
-      }
-    },
-    "videoPauses": {
-      "on": "video-pause",
-      "selector": "#myVideo",
-      "videoSpec": {
-        "exclude-autoplay": false
+      "timer": {
+        "on": "timer",
+        "timerSpec": {
+          "interval": 5,
+          "maxTimerLength": 20
+        },
+        "request": "timer",
+        "vars": {
+          "type": "timer"
+        }
       },
-      "request": "video",
-      "vars": {
-        "type": "video-pause"
-      }
-    },
-    "videoSession": {
-      "on": "video-session",
-      "selector": "#myVideo",
-      "videoSpec": {
-        "end-session-when-invisible": true,
-        "exclude-autoplay": false
+      "videoPlays": {
+        "on": "video-play",
+        "selector": "#myVideo",
+        "videoSpec": {
+          "exclude-autoplay": true
+        },
+        "request": "video",
+        "vars": {
+          "type": "video-play"
+        }
       },
-      "request": "video",
-      "vars": {
-        "type": "video-session"
-      }
-    },
-    "videoSecondsPlayed": {
-      "on": "video-seconds-played",
-      "selector": "#myVideo",
-      "videoSpec": {
-        "end-session-when-invisible": false,
-        "exclude-autoplay": false,
-        "interval": 3
+      "videoPauses": {
+        "on": "video-pause",
+        "selector": "#myVideo",
+        "videoSpec": {
+          "exclude-autoplay": false
+        },
+        "request": "video",
+        "vars": {
+          "type": "video-pause"
+        }
       },
-      "request": "video",
-      "vars": {
-        "type": "video-seconds-played"
-      }
-    },
-    "videoEnded": {
-      "on": "video-ended",
-      "selector": "#myVideo",
-      "videoSpec": {
-        "end-session-when-invisible": true,
-        "exclude-autoplay": false
+      "videoSession": {
+        "on": "video-session",
+        "selector": "#myVideo",
+        "videoSpec": {
+          "end-session-when-invisible": true,
+          "exclude-autoplay": false
+        },
+        "request": "video",
+        "vars": {
+          "type": "video-session"
+        }
       },
-      "request": "video",
-      "vars": {
-        "type": "video-ended"
+      "videoSecondsPlayed": {
+        "on": "video-seconds-played",
+        "selector": "#myVideo",
+        "videoSpec": {
+          "end-session-when-invisible": false,
+          "exclude-autoplay": false,
+          "interval": 3
+        },
+        "request": "video",
+        "vars": {
+          "type": "video-seconds-played"
+        }
+      },
+      "videoEnded": {
+        "on": "video-ended",
+        "selector": "#myVideo",
+        "videoSpec": {
+          "end-session-when-invisible": true,
+          "exclude-autoplay": false
+        },
+        "request": "video",
+        "vars": {
+          "type": "video-ended"
+        }
       }
     }
   }
-}
-</script>
+  </script>
 </amp-analytics>
 
 <amp-analytics id="analytics3" config="./analytics.config.json"></amp-analytics>
@@ -273,9 +284,9 @@ Donec pharetra molestie sollicitudin. Duis mattis eleifend rutrum. Quisque luctu
   <amp-analytics id="nestedAnalytics">
     <script type="application/json">
     {
-      "transport": {"beacon": false, "xhrpost": false},
+      "transport": {"beacon": true, "xhrpost": false},
       "requests": {
-        "visibility": "https://raw.githubusercontent.com/ampproject/amphtml/master/examples/img/ampicon.png?${type}&RANDOM"
+        "visibility": "/analytics/${type}?RANDOM"
       },
       "triggers": {
         "visibilityScope": {
@@ -286,7 +297,7 @@ Donec pharetra molestie sollicitudin. Duis mattis eleifend rutrum. Quisque luctu
             "selectionMethod": "scope",
             "visiblePercentageMin": 10
           },
-          "vars": { "type": "scope" }
+          "vars": { "type": "visible-scope" }
         },
         "visibilityClosest": {
           "on": "visible",
@@ -296,7 +307,7 @@ Donec pharetra molestie sollicitudin. Duis mattis eleifend rutrum. Quisque luctu
             "selectionMethod": "closest",
             "visiblePercentageMin": 20
           },
-          "vars": { "type": "closest" }
+          "vars": { "type": "visible-closest" }
         }
       }
     }

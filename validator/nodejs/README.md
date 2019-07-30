@@ -9,7 +9,7 @@ https://github.com/ampproject/amphtml/tree/master/validator/nodejs.
 ## Command Line Tool
 
 The `amphtml-validator` command line tool is documented here:
-https://www.ampproject.org/docs/guides/validate.html#command-line-tool
+https://amp.dev/documentation/guides-and-tutorials/learn/validation-workflow/validate_amp#command-line-tool
 
 ## Node.js API
 
@@ -41,8 +41,8 @@ Now try running it:
 ```
 $ node demo.js
 FAIL
-line 1, col 0: The mandatory attribute '⚡' is missing in tag 'html ⚡ for top-level html'. (see https://www.ampproject.org/docs/reference/spec.html#required-markup)
-line 1, col 0: The parent tag of tag 'html ⚡ for top-level html' is '$root', but it can only be '!doctype'. (see https://www.ampproject.org/docs/reference/spec.html#required-markup)
+line 1, col 0: The mandatory attribute '⚡' is missing in tag 'html ⚡ for top-level html'. (see https://amp.dev/documentation/guides-and-tutorials/learn/spec/amphtml#required-markup)
+line 1, col 0: The parent tag of tag 'html ⚡ for top-level html' is '$root', but it can only be '!doctype'. (see https://amp.dev/documentation/guides-and-tutorials/learn/spec/amphtml.html#required-markup)
 ...
 ```
 As expected, this emits errors because the provided string in the example, `<html>Hello, world.</html>` is not a valid AMP HTML document.
@@ -85,3 +85,11 @@ As expected, this emits errors because the provided string in the example, `<htm
 
 ### 1.0.21
 * --html_format=AMP4ADS is no longer experimental.
+
+### 1.0.22
+* --html_format=AMP4EMAIL added.
+
+### 1.0.23
+* The amphtml-validator binary now requires the Node.js binary to be called node.
+  On systems where the Node.js binary is called nodejs, consider installing
+  the nodejs-legacy Debian package or better yet, NVM.
