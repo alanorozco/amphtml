@@ -9,7 +9,7 @@
 
 <details>
 <summary>
-**Metrics**
+Metrics
 </summary>
 
 [![Absolute Code Coverage](https://img.shields.io/endpoint.svg?logo=Codecov&logoColor=white&style=flat-square&url=https%3A%2F%2Famp-project-metrics.appspot.com%2Fapi%2Fbadge%2FAbsoluteCoverageMetric "Test coverage for the repository as computed by CodeCov")](https://codecov.io/gh/ampproject/amphtml/)
@@ -22,7 +22,7 @@
 
 <details>
 <summary>
-**Tooling**
+Tooling
 </summary>
 
 [![Percy](https://img.shields.io/badge/%F0%9F%A6%94%20visual%20testing-Percy-violet.svg?style=flat-square "Percy")](https://percy.io/ampproject/amphtml)
