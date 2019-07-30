@@ -9,7 +9,6 @@
 
 <details>
 <summary>
-  
 Metrics
   
 </summary>
@@ -24,7 +23,6 @@ Metrics
 
 <details>
 <summary>
-  
 Tooling
 
 </summary>
