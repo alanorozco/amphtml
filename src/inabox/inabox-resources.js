@@ -75,12 +75,12 @@ export class InaboxResources {
   }
 
   /** @override */
-  getResourceForElement(element) {
+  getResourceForElementCouldBePure(element) {
     return Resource.forElement(element);
   }
 
   /** @override */
-  getResourceForElementOptional(element) {
+  getResourceForElementOptionalCouldBePure(element) {
     return Resource.forElementOptional(element);
   }
 

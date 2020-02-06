@@ -172,7 +172,7 @@ export class ViewportBindingNatural_ {
   }
 
   /** @override */
-  updateLightboxMode(unusedLightboxMode) {
+  updateLightboxModeCouldBePure(unusedLightboxMode) {
     // The layout is always accurate.
     return Promise.resolve();
   }

@@ -96,7 +96,7 @@ export class Url {
    * @param {string|!Location} url
    * @return {boolean}
    */
-  isProtocolValid(url) {
+  isProtocolValidCouldBePure(url) {
     return isProtocolValid(url);
   }
 
@@ -131,7 +131,7 @@ export class Url {
    * @param {string=} sourceName Used for error messages.
    * @return {string}
    */
-  assertHttpsUrl(urlString, elementContext, sourceName = 'source') {
+  assertHttpsUrlCouldBePure(urlString, elementContext, sourceName = 'source') {
     return assertHttpsUrl(urlString, elementContext, sourceName);
   }
 
@@ -140,7 +140,7 @@ export class Url {
    * @param {string} urlString
    * @return {string}
    */
-  assertAbsoluteHttpOrHttpsUrl(urlString) {
+  assertAbsoluteHttpOrHttpsUrlCouldBePure(urlString) {
     return assertAbsoluteHttpOrHttpsUrl(urlString);
   }
 

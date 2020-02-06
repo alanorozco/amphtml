@@ -285,7 +285,7 @@ export class Templates {
    * @param {string=} opt_querySelector
    * @return {?Element}
    */
-  maybeFindTemplate(parent, opt_querySelector) {
+  maybeFindTemplateCouldBePure(parent, opt_querySelector) {
     const templateId = parent.getAttribute('template');
     if (templateId) {
       return rootNodeFor(parent).getElementById(templateId);

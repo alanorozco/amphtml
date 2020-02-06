@@ -33,7 +33,7 @@ export class ElementStub extends BaseElement {
   }
 
   /** @override */
-  isLayoutSupported(unusedLayout) {
+  isLayoutSupportedCouldBePure(unusedLayout) {
     // Always returns true and will eventually call this method on the actual
     // element.
     return true;

@@ -387,7 +387,7 @@ export class FixedLayer {
    * @param {!Element} element
    * @return {boolean}
    */
-  isDeclaredFixed(element) {
+  isDeclaredFixedCouldBePure(element) {
     return !!element[DECLARED_FIXED_PROP];
   }
 
@@ -397,7 +397,7 @@ export class FixedLayer {
    * @param {!Element} element
    * @return {boolean}
    */
-  isDeclaredSticky(element) {
+  isDeclaredStickyCouldBePure(element) {
     return !!element[DECLARED_STICKY_PROP];
   }
 
@@ -1203,7 +1203,7 @@ class TransferLayerShadow {
   }
 
   /** @override */
-  transferTo(fe) {
+  transferToCouldBePure(fe) {
     const {element} = fe;
 
     dev().fine(TAG, 'transfer to fixed:', fe.id, fe.element);
@@ -1219,7 +1219,7 @@ class TransferLayerShadow {
   }
 
   /** @override */
-  returnFrom(fe) {
+  returnFromCouldBePure(fe) {
     dev().fine(TAG, 'return from fixed:', fe.id, fe.element);
     fe.element.removeAttribute('slot');
   }

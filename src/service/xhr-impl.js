@@ -156,7 +156,7 @@ export class Xhr {
    * @param {string|undefined} prefix to strip away.
    * @return {Promise<*>}
    */
-  xssiJson(res, prefix) {
+  xssiJsonCouldBePure(res, prefix) {
     if (!prefix) {
       return res.json();
     }
@@ -210,7 +210,7 @@ export class Xhr {
    * @param {string} url
    * @return {string}
    */
-  getCorsUrl(win, url) {
+  getCorsUrlCouldBePure(win, url) {
     return getCorsUrl(win, url);
   }
 }

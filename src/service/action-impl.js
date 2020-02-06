@@ -458,7 +458,7 @@ export class ActionService {
    * @param {!Element} target
    * @param {ActionHandlerDef} handler
    */
-  installActionHandler(target, handler) {
+  installActionHandlerCouldBePure(target, handler) {
     // TODO(dvoytenko, #7063): switch back to `target.id` with form proxy.
     const targetId = target.getAttribute('id') || '';
 
@@ -786,7 +786,7 @@ export class ActionService {
    * @param {!Element} node
    * @param {string} actionsStr
    */
-  setActions(node, actionsStr) {
+  setActionsCouldBePure(node, actionsStr) {
     node.setAttribute('on', actionsStr);
 
     // Clear cache.

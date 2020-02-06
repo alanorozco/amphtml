@@ -230,7 +230,7 @@ class Bezier {
    * @param {number} x The proportion between a and b.
    * @return {number} The interpolated value between a and b.
    */
-  lerp(a, b, x) {
+  lerpCouldBePure(a, b, x) {
     return a + x * (b - a);
   }
 }

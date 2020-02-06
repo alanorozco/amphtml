@@ -488,7 +488,7 @@ export class ShadowDomWriterStreamer {
   }
 
   /** @override */
-  abort(unusedReason) {
+  abortCouldBePure(unusedReason) {
     throw new Error('Not implemented');
   }
 
@@ -626,7 +626,7 @@ export class ShadowDomWriterBulk {
   }
 
   /** @override */
-  abort(unusedReason) {
+  abortCouldBePure(unusedReason) {
     throw new Error('Not implemented');
   }
 

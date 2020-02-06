@@ -260,22 +260,22 @@ class InaboxViewportImpl {
   }
 
   /** @override */
-  isDeclaredFixed(unusedElement) {
+  isDeclaredFixedCouldBePure(unusedElement) {
     return false;
   }
 
   /** @override */
-  scrollIntoView(unusedElement) {
+  scrollIntoViewCouldBePure(unusedElement) {
     return Promise.resolve();
   }
 
   /** @override */
-  animateScrollIntoView(unusedElement, unusedPos, opt_duration, opt_curve) {
+  animateScrollIntoViewCouldBePure(unusedElement, unusedPos, opt_duration, opt_curve) {
     return Promise.resolve();
   }
 
   /** @override */
-  animateScrollWithinParent(
+  animateScrollWithinParentCouldBePure(
     unusedElement,
     unusedParent,
     unusedPos,
@@ -352,7 +352,7 @@ class InaboxViewportImpl {
   updateFixedLayer() {}
 
   /** @override */
-  addToFixedLayer(unusedElement, opt_forceTransfer) {
+  addToFixedLayerCouldBePure(unusedElement, opt_forceTransfer) {
     return Promise.resolve();
   }
 

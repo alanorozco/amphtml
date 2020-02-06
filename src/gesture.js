@@ -671,7 +671,7 @@ export class GestureRecognizer {
    * @param {!Event} unusedEvent
    * @return {boolean}
    */
-  onTouchStart(unusedEvent) {
+  onTouchStartCouldBePure(unusedEvent) {
     return false;
   }
 
@@ -682,7 +682,7 @@ export class GestureRecognizer {
    * @param {!Event} unusedEvent
    * @return {boolean}
    */
-  onTouchMove(unusedEvent) {
+  onTouchMoveCouldBePure(unusedEvent) {
     return false;
   }
 

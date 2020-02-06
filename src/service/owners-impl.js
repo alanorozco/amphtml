@@ -48,7 +48,7 @@ export class OwnersImpl {
   }
 
   /** @override */
-  setOwner(element, owner) {
+  setOwnerCouldBePure(element, owner) {
     Resource.setOwner(element, owner);
   }
 
