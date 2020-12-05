@@ -107,7 +107,7 @@ function removeFromRuntimeSource(id, percentage) {
   const possiblyModifiedSourceFiles = filesContainingPattern(
     containRuntimeSource,
     id
-  );
+  ).filter((name) => name.endsWith('.js'));
   if (possiblyModifiedSourceFiles.length > 0) {
     jscodeshift('remove-experiment-runtime.js', [
       `--isExperimentOnLaunched=${percentage}`,
