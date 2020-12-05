@@ -135,6 +135,8 @@ function gitCommitSingleExperiment(
   {previousHistory, percentage},
   modified
 ) {
+  console.log(`git add ${modified.join(' ')}`);
+  console.log(`git commit -m "${cmdEscape(commitMessage)}"`);
   exec(`git add ${modified.join(' ')}`);
   const commitMessage =
     `${readableRemovalId(id, {previousHistory, percentage})}\n\n` +
