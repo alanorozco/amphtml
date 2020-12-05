@@ -13,7 +13,7 @@ jobs:
 #       - uses: actions/setup-node@v2.1.2
       - name: sweep-experiments
         run: |
-          git log --pretty="format:%h %aI %s" -S '"amp-access-iframe": 1,' --until=2019-12-05T00:00:37.586Z build-system/global-configs/prod-config.json
+          /usr/bin/git log --format="%h %aI %s" -S '"amp-access-iframe": 1,' --until=2019-12-05T00:00:37.586Z build-system/global-configs/prod-config.json
 #         npm ci
 #         npx gulp sweep-experiments
 
