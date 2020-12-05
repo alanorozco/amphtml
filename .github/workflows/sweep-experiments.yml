@@ -1,11 +1,11 @@
-# Executes `gulp sweep-experiments` at the beginning of each month.
+# Executes `gulp sweep-experiments` every monday.
 # If experiments are swept, a PR is created.
 
 on:
   push:
     branches: [master]
   schedule:
-    - cron: '0 0 1 * *'
+    - cron: '0 0 * * 1'
 
 jobs:
   sweep-experiments:
