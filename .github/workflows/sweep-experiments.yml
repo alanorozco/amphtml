@@ -21,13 +21,18 @@ jobs:
         uses: actions/setup-node@v2.1.2
 
       - name: run
+        id: run
         run: |
+          git config --global user.name "${GITHUB_ACTOR}"
+          git config --global user.email "${GITHUB_ACTOR}@users.noreply.github.com"
           npm ci
           npx gulp sweep-experiments --skip_lint_fix
+          echo "::set-output name=title::$(git log -1 --format=%s)"
+          echo "::set-output name=body::$(git log -1 --format=%b)"
 
       - name: create-pull-request
         uses: peter-evans/create-pull-request@v3
         with:
           draft: true
-          title: sweep experiments
-          body:  sweep experiments
+          title: ${{ steps.run.outputs.title }}
+          body: ${{ steps.run.outputs.body }}
