@@ -1,0 +1,16 @@
+on:
+  schedule:
+    - cron: '0 0/5 0 ? * * *'
+
+steps:
+  - name: Checkout code
+    uses: actions/checkout@v2
+
+  - name: npm ci
+    run: npm ci
+
+  - name: gulp sweep-experiments
+    run: gulp sweep-experiments
+
+  - name: Create Pull Request
+    uses: peter-evans/create-pull-request@v3
