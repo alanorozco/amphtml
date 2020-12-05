@@ -135,6 +135,7 @@ function gitCommitSingleExperiment(
   {previousHistory, percentage},
   modified
 ) {
+  console.log(getStdout(`git status`));
   console.log(`git add ${modified.join(' ')}`);
   exec(`git add ${modified.join(' ')}`);
   const commitMessage =
