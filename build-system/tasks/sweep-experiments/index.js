@@ -17,7 +17,7 @@ const argv = require('minimist')(process.argv.slice(2));
 const log = require('fancy-log');
 const {exec} = require('../../common/exec');
 const {getOutput} = require('../../common/process');
-const {magenta, cyan} = require('ansi-colors');
+const {magenta, cyan, red} = require('ansi-colors');
 const {readJsonSync, writeFileSync} = require('fs-extra');
 
 const containRuntimeSource = ['3p', 'ads', 'extensions', 'src', 'test'];
@@ -210,6 +210,14 @@ const findConfigBitCommits = (
       ` ${configPath}`
   );
   if (out.length <= 0) {
+    console.log(
+      red('no commits'),
+      'git log' +
+        ' --pretty="format:%h %aI %s"' +
+        ` -S '"${experiment}": ${percentage},'` +
+        ` --until=${cutoffDateFormatted}` +
+        ` ${configPath}`
+    );
     return [];
   }
   return out.split('\n');
@@ -256,7 +264,6 @@ function collectWork(
       percentage
     );
     if (commitStrings.length <= 0) {
-      console.log('no commits!');
       continue;
     }
 
