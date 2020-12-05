@@ -9,14 +9,19 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v2
+      - name: checkout
+        uses: actions/checkout@v2
         with:
           fetch-depth: 0
-      - uses: actions/setup-node@v2.1.2
-      - name: sweep-experiments
+
+      - name: setup-node
+        uses: actions/setup-node@v2.1.2
+
+      - name: run
         run: |
           npm ci
-          npx gulp sweep-experiments
+          npx gulp sweep-experiments --skip_lint_fix
           git log -1 --format=%b
 
-#       - uses: peter-evans/create-pull-request@v3
+      - name: create-pull-request
+        uses: peter-evans/create-pull-request@v3
