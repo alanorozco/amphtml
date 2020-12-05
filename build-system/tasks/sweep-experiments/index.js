@@ -136,8 +136,6 @@ function gitCommitSingleExperiment(
   {previousHistory, percentage},
   modified
 ) {
-  console.log(getStdout(`git status`));
-  console.log(`git add ${modified.join(' ')}`);
   exec(`git add ${modified.join(' ')}`);
   const commitMessage =
     `${readableRemovalId(id, {previousHistory, percentage})}\n\n` +
@@ -148,8 +146,15 @@ function gitCommitSingleExperiment(
           ` - ${hash} - ${authorDate}\n   ${subject}\n`
       )
       .join('\n');
-  console.log(`git commit -m "${cmdEscape(commitMessage)}"`);
-  return getStdout(`git commit -m "${cmdEscape(commitMessage)}"`);
+  const {stdout, stderr} = getOutput(
+    `git commit -m "${cmdEscape(commitMessage)}"`
+  );
+  if (stderr) {
+    console.log(red(stderr));
+    console.log(`git commit -m "${cmdEscape(commitMessage)}"`);
+    console.log(getStdout(`git status`));
+  }
+  return stdout;
 }
 
 function readableRemovalId(id, {percentage, previousHistory}) {
@@ -214,14 +219,6 @@ const findConfigBitCommits = (
       ` ${configPath}`
   );
   if (out.length <= 0) {
-    console.log(
-      red('no commits'),
-      'git log' +
-        ' --pretty="format:%h %aI %s"' +
-        ` -S '"${experiment}": ${percentage},'` +
-        ` --until=${cutoffDateFormatted}` +
-        ` ${configPath}`
-    );
     return [];
   }
   return out.split('\n');
@@ -240,8 +237,6 @@ function collectWork(
   cutoffDateFormatted,
   removeExperiment
 ) {
-  console.log(prodConfig);
-  console.log(cutoffDateFormatted);
   const work = {};
   for (const experiment in prodConfig) {
     const percentage = prodConfig[experiment];
@@ -258,8 +253,6 @@ function collectWork(
     ) {
       continue;
     }
-
-    console.log('maybe', experiment);
 
     const commitStrings = findConfigBitCommits(
       cutoffDateFormatted,
@@ -354,7 +347,9 @@ async function sweepExperiments() {
 
   if (report.length > 0) {
     let reportCommitMessage =
-      `🚮 Sweep experiments\n\n` +
+      `🚮 Sweep experiments older than ${truncateYyyyMmDd(
+        cutoffDateFormatted
+      )}\n\n` +
       `Sweep experiments last flipped globally up to ${truncateYyyyMmDd(
         cutoffDateFormatted
       )}:\n\n` +
