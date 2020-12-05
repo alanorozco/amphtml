@@ -20,7 +20,8 @@ const {getOutput} = require('../../common/process');
 const {magenta, cyan} = require('ansi-colors');
 const {readJsonSync, writeFileSync} = require('fs-extra');
 
-const dirsContainRuntimeSource = ['3p', 'ads', 'extensions', 'src', 'test'];
+const containRuntimeSource = ['3p', 'ads', 'extensions', 'src', 'test'];
+const containExampleHtml = ['examples', 'test'];
 
 const experimentsConfigPath = 'tools/experiments/experiments-config.js';
 const prodConfigPath = 'build-system/global-configs/prod-config.json';
@@ -42,15 +43,14 @@ function getStdout(cmd) {
 }
 
 /**
+ * @param {!Array<string>} dirs
  * @param {string} string
  * @return {!Array<string>}
  */
-const filesContainingString = (string) =>
-  getStdout(
-    `grep -lr "${cmdEscape(string)}" {${dirsContainRuntimeSource.join(',')}}`
-  )
-    .split('\n')
-    .filter((name) => name.endsWith('.js'));
+const filesContainingPattern = (dirs, string) => {
+  const out = getStdout(`grep -Elr "${cmdEscape(string)}" {${dirs.join(',')}}`);
+  return !out ? [] : out.split('\n');
+};
 
 /**
  * @param {string} fromHash
@@ -104,7 +104,10 @@ function removeFromJsonConfig(config, path, id) {
  * @return {Array<string>} modified files
  */
 function removeFromRuntimeSource(id, percentage) {
-  const possiblyModifiedSourceFiles = filesContainingString(id);
+  const possiblyModifiedSourceFiles = filesContainingPattern(
+    containRuntimeSource,
+    id
+  );
   if (possiblyModifiedSourceFiles.length > 0) {
     jscodeshift('remove-experiment-runtime.js', [
       `--isExperimentOnLaunched=${percentage}`,
@@ -315,7 +318,7 @@ async function sweepExperiments() {
       ...removeFromExperimentsConfig(id),
       ...removeFromJsonConfig(prodConfig, prodConfigPath, id),
       ...removeFromJsonConfig(canaryConfig, canaryConfigPath, id),
-      ...removeFromRuntimeSource(id),
+      ...removeFromRuntimeSource(id, work[id].percentage),
     ];
 
     if (argv.skip_lint_fix) {
@@ -344,12 +347,23 @@ async function sweepExperiments() {
 
     const modifiedSourceFiles = getModifiedSourceFiles(headHash);
     if (modifiedSourceFiles.length > 0) {
-      reportCommitMessage += String(
+      reportCommitMessage +=
         '---\n\n**⚠️ This changes Javascript source files**\n\n' +
-          'The following may contain errors and/or require intervention to remove superfluous conditionals:\n\n' +
-          modifiedSourceFiles.map((path) => `- \`${path}\``).join('\n') +
-          '\n\n'
-      );
+        'The following may contain errors and/or require intervention to remove superfluous conditionals:\n\n' +
+        modifiedSourceFiles.map((path) => `- \`${path}\``).join('\n') +
+        '\n\n';
+    }
+
+    const htmlFilesWithReferences = filesContainingPattern(
+      containExampleHtml,
+      `['"](${Object.keys(work).join('|')})['"]`
+    ).filter((name) => name.endsWith('.html'));
+    if (htmlFilesWithReferences.length > 0) {
+      reportCommitMessage +=
+        '---\n\n**⚠️ There are HTML files with possible references**\n\n' +
+        'The following HTML files contain references to experiment names which may be stale and should be manually removed:\n\n' +
+        htmlFilesWithReferences.map((path) => `- \`${path}\``).join('\n') +
+        '\n\n';
     }
 
     log(
