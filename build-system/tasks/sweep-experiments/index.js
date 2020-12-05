@@ -136,7 +136,6 @@ function gitCommitSingleExperiment(
   modified
 ) {
   console.log(`git add ${modified.join(' ')}`);
-  console.log(`git commit -m "${cmdEscape(commitMessage)}"`);
   exec(`git add ${modified.join(' ')}`);
   const commitMessage =
     `${readableRemovalId(id, {previousHistory, percentage})}\n\n` +
@@ -147,6 +146,7 @@ function gitCommitSingleExperiment(
           ` - ${hash} - ${authorDate}\n   ${subject}\n`
       )
       .join('\n');
+  console.log(`git commit -m "${cmdEscape(commitMessage)}"`);
   return getStdout(`git commit -m "${cmdEscape(commitMessage)}"`);
 }
 
