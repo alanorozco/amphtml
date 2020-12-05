@@ -8,7 +8,9 @@ jobs:
   sweep-experiments:
     runs-on: ubuntu-latest
     steps:
-      - run: git log "HEAD^..HEAD"
+      - uses: actions/checkout@v2
+      - run: |
+          git log "HEAD^..HEAD"
 #       - uses: actions/checkout@v2
 #       - uses: actions/setup-node@v2.1.2
 #       - run: npm ci
