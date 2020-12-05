@@ -2,15 +2,14 @@ on:
   schedule:
     - cron: '*/5 * * * *'
 
-steps:
-  - name: Checkout code
-    uses: actions/checkout@v2
+jobs:
+  sweep-experiments:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v2.1.2
+      - run: |
+          npm ci
+          npx gulp sweep-experiments
 
-  - name: npm ci
-    run: npm ci
-
-  - name: gulp sweep-experiments
-    run: gulp sweep-experiments
-
-  - name: Create Pull Request
-    uses: peter-evans/create-pull-request@v3
+#       - uses: peter-evans/create-pull-request@v3
