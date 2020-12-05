@@ -79,11 +79,10 @@ const jscodeshift = (transform, args = []) =>
  * @return {Array<string>} modified files
  */
 function removeFromExperimentsConfig(id) {
-  jscodeshift(
-    'remove-experiment-config.js'[
-      (`--experimentId=${id}`, experimentsConfigPath)
-    ]
-  );
+  jscodeshift('remove-experiment-config.js', [
+    `--experimentId=${id}`,
+    experimentsConfigPath,
+  ]);
   return [experimentsConfigPath];
 }
 
