@@ -1,10 +1,13 @@
 on:
+  push:
+    branches: [master]
   schedule:
     - cron: '*/5 * * * *'
 
 jobs:
-  sweep-experiments:
+  sweep-experimentszzzzz:
     runs-on: ubuntu-latest
+
     steps:
       - uses: actions/checkout@v2
       - uses: actions/setup-node@v2.1.2
