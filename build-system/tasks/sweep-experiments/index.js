@@ -379,7 +379,7 @@ sweepExperiments.flags = {
   'days_ago':
     ' How old experiment configuration flips must be for an experiment to be removed. Default is 365 days. This is ignored when using --experiment.',
   'dry':
-    " Don't write, but only display which experiments would be removed before the cutoff date.",
+    " Don't write, but only list the experiments that would be removed by this command.",
   'experiment': ' Remove a specific experiment id.',
   'skip_lint_fix': ' Skips fixing lint issues on modified files.',
 };
