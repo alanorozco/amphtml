@@ -5,13 +5,14 @@ on:
     - cron: '*/5 * * * *'
 
 jobs:
-  sweep-experimentszzzzz:
+  sweep-experiments:
     runs-on: ubuntu-latest
 
     steps:
       - uses: actions/checkout@v2
       - uses: actions/setup-node@v2.1.2
-      - run: |
+      - name: sweep-experiments
+        run: |
           npm ci
           npx gulp sweep-experiments
 
