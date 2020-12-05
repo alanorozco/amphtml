@@ -381,5 +381,5 @@ sweepExperiments.flags = {
   'dry':
     " Don't write, but only display which experiments would be removed before the cutoff date.",
   'experiment': ' Remove a specific experiment id.',
-  'skip_lint_fix': ' Skips lint-fixing modified files before each commit.',
+  'skip_lint_fix': ' Skips fixing lint issues on modified files.',
 };
