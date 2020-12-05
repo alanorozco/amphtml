@@ -1,4 +1,6 @@
 on:
+  push:
+    branches: [ master ]
   schedule:
     - cron: '*/5 * * * *'
       
@@ -7,12 +9,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-
-      - name: npm ci
-        run: npm ci
-
-      - name: gulp sweep-experiments
-        run: gulp sweep-experiments
-
-      - name: Create Pull Request
-        uses: peter-evans/create-pull-request@v3
+      - uses: actions/setup-node@v2.1.2
+      - run: npm i -g gulp cli
+      - run: npm ci
+      - run: gulp sweep-experiments
+      - uses: peter-evans/create-pull-request@v3
