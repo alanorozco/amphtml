@@ -55,8 +55,8 @@ export default function transformer(file, api, options) {
         booleanLiteral.comments = [
           j.commentBlock(
             ` experiment: ${isExperimentOnExperiment} `,
-            false,
-            true
+            /* leading */ true,
+            /* trailing */ false
           ),
         ];
         j(path).replaceWith(booleanLiteral);
