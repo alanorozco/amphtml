@@ -245,6 +245,8 @@ function collectWork(
       continue;
     }
 
+    console.log('maybe', experiment);
+
     const commitStrings = findConfigBitCommits(
       cutoffDateFormatted,
       prodConfigPath,
@@ -252,6 +254,7 @@ function collectWork(
       percentage
     );
     if (commitStrings.length <= 0) {
+      console.log('no commits!');
       continue;
     }
 
