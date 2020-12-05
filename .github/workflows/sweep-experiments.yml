@@ -1,3 +1,6 @@
+# Executes `gulp sweep-experiments` at the beginning of each month.
+# If experiments are swept, a PR is created.
+
 on:
   push:
     branches: [master]
