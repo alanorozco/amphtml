@@ -1,8 +1,11 @@
+# Executes `gulp sweep-experiments` every monday.
+# If experiments are swept, a PR is created.
+
 on:
   push:
     branches: [master]
   schedule:
-    - cron: '0 0 1 * *'
+    - cron: '0 0 * * 1'
 
 jobs:
   sweep-experiments:
@@ -21,7 +24,10 @@ jobs:
         run: |
           npm ci
           npx gulp sweep-experiments --skip_lint_fix
-          git log -1 --format=%b
 
       - name: create-pull-request
         uses: peter-evans/create-pull-request@v3
+        with:
+          draft: true
+          title: sweep experiments
+          body:  sweep experiments
