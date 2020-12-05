@@ -57,29 +57,27 @@ export default function transformer(file, api, options) {
         .closest(j.Program)
         .find(
           j.ImportSpecifier,
-          (node) =>
-            node.imported &&
-            node.imported.name === name &&
-            j(path)
-              .closest(j.Program)
+          (node) => node.imported && node.imported.name === name
+        )
+        .closest(j.ImportDeclaration)
+        .forEach((path) => {
+          if (
+            j(path.scope.node)
               .find(
                 j.CallExpression,
                 (node) => node.callee && node.callee.name === name
               )
-              .size() <= 1
-        )
-        .forEach((path) => {
-          j(path)
-            .closest(j.ImportDeclaration)
-            .forEach((path) => {
-              if (path.node.specifiers.length === 1) {
-                j(path).remove();
-              } else {
-                path.node.specifiers = path.node.specifiers.filter(
-                  (node) => node.imported && node.imported.name !== name
-                );
-              }
-            });
+              .size() > 1
+          ) {
+            return;
+          }
+          if (path.node.specifiers.length === 1) {
+            j(path).remove();
+          } else {
+            path.node.specifiers = path.node.specifiers.filter(
+              (node) => node.imported && node.imported.name !== name
+            );
+          }
         });
 
       // remove or replace call
