@@ -27,9 +27,22 @@ jobs:
           git config --global user.email "${GITHUB_ACTOR}@users.noreply.github.com"
           npm ci
           npx gulp sweep-experiments --skip_lint_fix
-          echo "::set-output name=\"title::$(git log -1 --format=%s)\""
-          echo "::set-output name=\"body::$(git log -1 --format=%b)\""
-          echo "::set-output name=\"branch::sweep-experiments-$(git log -1 --format=%h)\""
+          
+          export title=$(git log -1 --format=%s)
+          body="${title%\"}"
+          body="${title#\"}"
+
+          export body=$(git log -1 --format=%b)
+          body="${body%\"}"
+          body="${body#\"}"
+          
+          export hash=$(git log -1 --format=%h)
+          hash="${hash%\"}"
+          hash="${hash#\"}"
+
+          echo "::set-output name=title::$(echo "$title")"
+          echo "::set-output name=body::$(echo "$body")"
+          echo "::set-output name=branch::$(echo sweep-experiments-"$hash")"
 
       - name: create-pull-request
         uses: peter-evans/create-pull-request@v3
