@@ -12,6 +12,8 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      -
+
       - name: checkout
         uses: actions/checkout@v2
         with:
@@ -22,6 +24,8 @@ jobs:
 
       - name: run
         run: |
+          git config --global user.name "${GITHUB_ACTOR}"
+          git config --global user.email "${GITHUB_ACTOR}@users.noreply.github.com"
           npm ci
           npx gulp sweep-experiments --skip_lint_fix
 
