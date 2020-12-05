@@ -21,9 +21,11 @@ jobs:
         run: |
           npm ci
           npx gulp sweep-experiments --skip_lint_fix
-          git log -1 --format=%b
+          echo "::set-output name=subject::$(git log 1 --format=%s)"
+          echo "::set-output name=body::$(git log 1 --format=%b)"
 
       - name: create-pull-request
         uses: peter-evans/create-pull-request@v3
         with:
-          title: 🚮 Sweep experiments
+          title: ${{ steps.run.outputs.subject }}
+          body: ${{ steps.run.outputs.body }}
