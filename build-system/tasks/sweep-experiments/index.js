@@ -122,8 +122,7 @@ function removeFromRuntimeSource(id, percentage) {
  * @param {string} str
  * @return {string}
  */
-const cmdEscape = (str) =>
-  str.replace(/["`]/g, (c) => `\\${c}`).replace(/\n/g, '\\n');
+const cmdEscape = (str) => str.replace(/["`]/g, (c) => `\\${c}`);
 
 /**
  * @param {string} id
