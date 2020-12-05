@@ -27,8 +27,9 @@ jobs:
           git config --global user.email "${GITHUB_ACTOR}@users.noreply.github.com"
           npm ci
           npx gulp sweep-experiments --skip_lint_fix
-          echo "::set-output name=title::$(git log -1 --format=%s)"
-          echo "::set-output name=body::$(git log -1 --format=%b)"
+          echo "::set-output name=\"title::$(git log -1 --format=%s)\""
+          echo "::set-output name=\"body::$(git log -1 --format=%b)\""
+          echo "::set-output name=\"branch::sweep-experiments-$(git log -1 --format=%h)\""
 
       - name: create-pull-request
         uses: peter-evans/create-pull-request@v3
@@ -36,3 +37,4 @@ jobs:
           draft: true
           title: ${{ steps.run.outputs.title }}
           body: ${{ steps.run.outputs.body }}
+          branch: ${{ steps.run.outputs.branch }}
