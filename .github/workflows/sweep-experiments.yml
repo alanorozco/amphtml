@@ -9,10 +9,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
+      - uses: actions/setup-node@v2.1.2
       - run: |
-          git log "HEAD^..HEAD"
-#       - uses: actions/checkout@v2
-#       - uses: actions/setup-node@v2.1.2
-#       - run: npm ci
-#       - run: npx gulp sweep-experiments
+          npm ci
+          npx gulp sweep-experiments
 #       - uses: peter-evans/create-pull-request@v3
