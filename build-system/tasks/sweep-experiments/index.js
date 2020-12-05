@@ -275,14 +275,14 @@ async function sweepExperiments() {
   const prodConfig = readJsonSync(prodConfigPath);
   const canaryConfig = readJsonSync(canaryConfigPath);
 
-  const cutoffPointFormatted = daysAgo(
+  const cutoffDateFormatted = daysAgo(
     argv.experiment ? 0 : argv.days_ago || 365
   ).toISOString();
 
   const work = collectWork(
     prodConfig,
     canaryConfig,
-    cutoffPointFormatted,
+    cutoffDateFormatted,
     argv.experiment
   );
   const report = [];
@@ -292,7 +292,7 @@ async function sweepExperiments() {
 
   if (total === 0) {
     log(cyan('No experiments to remove.'));
-    log(`Cutoff at ${cutoffPointFormatted}`);
+    log(`Cutoff at ${cutoffDateFormatted}`);
     return;
   }
 
@@ -337,7 +337,7 @@ async function sweepExperiments() {
     let reportCommitMessage =
       `🚮 Sweep experiments\n\n` +
       `Sweep experiments last flipped globally up to ${truncateYyyyMmDd(
-        cutoffPointFormatted
+        cutoffDateFormatted
       )}:\n\n` +
       report.join('\n') +
       '\n\n';
@@ -380,6 +380,6 @@ sweepExperiments.flags = {
     ' How old experiment configuration flips must be for an experiment to be removed. Default is 365 days. This is ignored when using --experiment.',
   'experiment': ' Remove a specific experiment id.',
   'dry':
-    " Don't write, but only display which experiments would be removed from the cutoff point.",
+    " Don't write, but only display which experiments would be removed before the cutoff date.",
   'skip_lint_fix': ' Skips lint-fixing modified files before each commit.',
 };
