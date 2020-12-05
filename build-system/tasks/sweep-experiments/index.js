@@ -228,6 +228,8 @@ function collectWork(
   cutoffDateFormatted,
   removeExperiment
 ) {
+  console.log(prodConfig);
+  console.log(cutoffDateFormatted);
   const work = {};
   for (const experiment in prodConfig) {
     const percentage = prodConfig[experiment];
