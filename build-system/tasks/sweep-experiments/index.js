@@ -38,28 +38,40 @@ const globalWritablePaths = [
  * @return {?string}
  */
 function getStdout(cmd) {
-  const {stdout} = getOutput(cmd);
+  const {stdout, stderr} = getOutput(cmd);
+  if (!stdout && stderr) {
+    throw new Error(`${cmd}\n\n${stderr}`);
+  }
   return stdout && stdout.trim();
 }
+
+function getStdoutLines(cmd) {
+  const stdout = getStdout(cmd);
+  return !stdout ? [] : stdout.split('\n');
+}
+
+/**
+ * @param {string} str
+ * @return {string}
+ */
+const cmdEscape = (str) => str.replace(/["`]/g, (c) => `\\${c}`);
 
 /**
  * @param {!Array<string>} dirs
  * @param {string} string
  * @return {!Array<string>}
  */
-const filesContainingPattern = (dirs, string) => {
-  const out = getStdout(`grep -Elr "${cmdEscape(string)}" {${dirs.join(',')}}`);
-  return !out ? [] : out.split('\n');
-};
+const filesContainingPattern = (dirs, string) =>
+  getStdoutLines(`grep -Elr "${cmdEscape(string)}" {${dirs.join(',')}}`);
 
 /**
  * @param {string} fromHash
  * @return {!Array<string>}
  */
 const getModifiedSourceFiles = (fromHash) =>
-  getStdout(`git diff --name-only ${fromHash}..HEAD | grep .js`)
-    .split('\n')
-    .filter((file) => !globalWritablePaths.includes(file));
+  getStdoutLines(`git diff --name-only ${fromHash}..HEAD | grep .js`).filter(
+    (file) => !globalWritablePaths.includes(file)
+  );
 
 /**
  * Runs a jscodeshift transform under this directory.
@@ -119,39 +131,26 @@ function removeFromRuntimeSource(id, percentage) {
 }
 
 /**
- * @param {string} str
- * @return {string}
- */
-const cmdEscape = (str) => str.replace(/["`]/g, (c) => `\\${c}`);
-
-/**
  * @param {string} id
  * @param {*} workItem
  * @param {!Array<string>} modified
- * @return {?string}
+ * @return {? string}
  */
-function gitCommitSingleExperiment(
-  id,
-  {previousHistory, percentage},
-  modified
-) {
-  exec(`git add ${modified.join(' ')}`);
-  const commitMessage =
-    `${readableRemovalId(id, {previousHistory, percentage})}\n\n` +
-    `${prodConfigPath.split('/').pop()} history:\n\n` +
-    previousHistory
-      .map(
-        ({hash, authorDate, subject}) =>
-          ` - ${hash} - ${authorDate}\n   ${subject}\n`
-      )
-      .join('\n');
-  const {stdout, stderr} = getOutput(
-    `git commit -m "${cmdEscape(commitMessage)}"`
-  );
-  if (stderr) {
-    throw new Error(stderr);
-  }
-  return stdout;
+function gitCommitSingleExperiment(id, workItem, modified) {
+  const message = workItem.previousHistory
+    .reduce(
+      (paragraphs, {hash, authorDate, subject}) => [
+        ...paragraphs,
+        `- ${hash} - ${authorDate} - ${subject}`,
+      ],
+      [
+        readableRemovalId(id, workItem),
+        `Previous history on ${prodConfigPath.split('/').pop()}:`,
+      ]
+    )
+    .join('\n\n');
+  getStdout(`git add ${modified.join(' ')}`);
+  return getStdout(`git commit -m "${cmdEscape(message)}"`);
 }
 
 function readableRemovalId(id, {percentage, previousHistory}) {
@@ -199,30 +198,33 @@ const truncateYyyyMmDd = (formattedDate) =>
  * @param {number} percentage
  * @return {Array<string>}
  */
-function findConfigBitCommits(
+const findConfigBitCommits = (
   cutoffDateFormatted,
   configPath,
   experiment,
   percentage
-) {
-  const out = getStdout(
-    'git log' +
-      ' --format="%h %aI %s"' +
-      ` -S '"${experiment}": ${percentage},'` +
-      ` --until=${cutoffDateFormatted}` +
-      ` ${configPath}`
-  );
-  return out.length <= 0
-    ? []
-    : out.split('\n').map((line) => {
-        const tokens = line.split(' ');
-        return {
-          hash: tokens.shift(),
-          authorDate: tokens.shift(),
-          subject: tokens.join(),
-        };
-      });
-}
+) =>
+  getStdoutLines(
+    [
+      'git log',
+      `--until=${cutoffDateFormatted}`,
+      // Look for entries that contain exact percentage string, like:
+      // "my-experiment-launched": 0,
+      `-S '"${experiment}": ${percentage},'`,
+      // %h: hash
+      // %aI: authorDate
+      // %s: subject
+      ' --format="%h %aI %s"',
+      configPath,
+    ].join(' ')
+  ).map((line) => {
+    const tokens = line.split(' ');
+    return {
+      hash: tokens.shift(),
+      authorDate: tokens.shift(),
+      subject: tokens.join(),
+    };
+  });
 
 /**
  * @param {string} files
@@ -299,7 +301,7 @@ function collectWork(
   }
 
   const work = {};
-  for (const [experiment, percentage] in Object.entries(prodConfig)) {
+  for (const [experiment, percentage] of Object.entries(prodConfig)) {
     if (
       typeof percentage === 'number' &&
       percentage === canaryConfig[experiment] &&
