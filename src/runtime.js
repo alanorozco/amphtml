@@ -479,7 +479,8 @@ function maybeLoadCorrectVersion(win, fnOrStruct) {
  *     pumped.
  */
 function maybePumpEarlyFrame(win, cb) {
-  if (!isExperimentOn(win, 'pump-early-frame')) {
+  if (!/* experiment: pump-early-frame */
+  true) {
     cb();
     return;
   }
