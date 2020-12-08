@@ -33,7 +33,7 @@ jobs:
           git config --global user.name "${GITHUB_ACTOR}"
           git config --global user.email "${GITHUB_ACTOR}@users.noreply.github.com"
 
-          gulp sweep-experiments
+          unbuffer node node_modules/gulp/bin/gulp.js sweep-experiments
 
           title=$(git log -1 --format=%s)
           title="${title//'%'/'%25'}"
