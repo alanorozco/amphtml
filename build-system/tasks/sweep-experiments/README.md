@@ -4,13 +4,13 @@ Sweeps experiments by id, or when they were last flipped before a certain cutoff
 
 ## Command line
 
-By default, removes experiments whose [production launch value](../../global-configs/prod-config.json) was last set to either `1` or `0` over a year ago:
+By default, removes experiments whose [production launch value](../../global-configs/prod-config.json) was last set to either `1` or `0` over 180 days ago:
 
 ```sh
 gulp sweep-experiments
 ```
 
-The tool can also sweep a specific experiment by id, regardless of its launch value:
+The tool can also sweep a specific experiment by id, regardless of its launch value or flip history:
 
 ```sh
 gulp sweep-experiments --experiment=my-experiment

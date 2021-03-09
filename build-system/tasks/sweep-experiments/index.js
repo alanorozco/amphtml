@@ -431,7 +431,7 @@ async function sweepExperiments() {
   const canaryConfig = readJsonSync(canaryConfigPath);
 
   const cutoffDateFormatted = dateDaysAgo(
-    argv.experiment ? 0 : argv.days_ago || 365
+    argv.experiment ? 0 : argv.days_ago || 180
   ).toISOString();
 
   const {exclude, include} = collectWork(
@@ -536,7 +536,7 @@ sweepExperiments.description =
 
 sweepExperiments.flags = {
   'days_ago':
-    '  How old experiment configuration flips must be for an experiment to be removed. Default is 365 days. This is ignored when using --experiment.',
+    '  How old experiment configuration flips must be for an experiment to be removed. Default is 180 days. This is ignored when using --experiment.',
   'dry_run':
     "  Don't write, but only list the experiments that would be removed by this command.",
   'experiment': '  Remove a specific experiment id.',
